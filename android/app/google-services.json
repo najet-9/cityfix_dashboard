@@ -1,0 +1,130 @@
+{
+  "project_info": {
+    "project_number": "141477545510",
+    "project_id": "cityfix-c5565",
+    "storage_bucket": "cityfix-c5565.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:141477545510:android:dd120f7dcd1a583f36c8e7",
+        "android_client_info": {
+          "package_name": "com.example.admin_dashboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "141477545510-8fpe3og6rkf19g2cq8vp4ifghostm7n7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZUyuZrm3DoXqRALgwJrzei7JffqUCZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "141477545510-8fpe3og6rkf19g2cq8vp4ifghostm7n7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "141477545510-a8p26l28arde87r0r93hmbvl4fbsjm3s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cityfix"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:141477545510:android:0d732a9c38dcae8f36c8e7",
+        "android_client_info": {
+          "package_name": "com.example.cityfix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "141477545510-7i83i9cvs07agh6fsnlhlhppfs856ift.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "a8ea7c823b587ba21edf8a8307dc43d04397d611"
+          }
+        },
+        {
+          "client_id": "141477545510-e7ml7lfqec7is3l8llpolpngvb8q0edc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "955d4cecbb1e71a280e788867398088c81dfdb81"
+          }
+        },
+        {
+          "client_id": "141477545510-hu9ldoclh7har8ac1kqo140s0vt212ug.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "db22f2ea2cf858ee3a2fd945325c623506b2e175"
+          }
+        },
+        {
+          "client_id": "141477545510-pesutti441pg3hi3duocaomo72b1vis9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "0d832564503a137d01c06c203a4bc7aa1793ee7c"
+          }
+        },
+        {
+          "client_id": "141477545510-spuj8gtnk0psutp3o3ehoh8c7l39egm2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "4663d48340f913fed1182da034506f069a31e901"
+          }
+        },
+        {
+          "client_id": "141477545510-ujr2vapho1at6jum1od6ilh65v145gpn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cityfix",
+            "certificate_hash": "402aeee560cd3201fc41ed7a53127fc28bd8a917"
+          }
+        },
+        {
+          "client_id": "141477545510-8fpe3og6rkf19g2cq8vp4ifghostm7n7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZUyuZrm3DoXqRALgwJrzei7JffqUCZYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "141477545510-8fpe3og6rkf19g2cq8vp4ifghostm7n7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "141477545510-a8p26l28arde87r0r93hmbvl4fbsjm3s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cityfix"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
