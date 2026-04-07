@@ -1,28 +1,52 @@
-import 'package:admin_dashboard/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme/app_theme.dart';
+import 'package:admin_dashboard/screens/admin_login.dart'; 
+import 'package:admin_dashboard/screens/overview_page.dart'; 
+import 'package:admin_dashboard/screens/admin_shell.dart'; 
+import 'package:admin_dashboard/state/app_state.dart'; 
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print(Firebase.app().name);
-  runApp(const MyApp());
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthState()),
+        ChangeNotifierProvider(create: (_) => DashboardState()),
+      ],
+      child: const CityFixAdminApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CityFixAdminApp extends StatelessWidget {
+  const CityFixAdminApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CityFix DZ',
+      title: 'CityFix — Admin Dashboard',
       debugShowCheckedModeBanner: false,
-
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF8F9FE),
-        primaryColor: const Color(0xFF2B58E4),
-        useMaterial3: true,
-      ),
+      // Assure-toi que lightTheme est bien défini dans ton AppTheme
+      theme: ThemeData(primarySwatch: Colors.blue), 
+      home: const AuthWrapper(),
     );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Écoute les changements d'authentification
+    final authState = context.watch<AuthState>();
+    
+    if (authState.isAuthenticated) {
+      // Si connecté, on affiche le Shell (qui contient la sidebar et l'Overview)
+      return const AdminShell(); 
+    } else {
+      // Sinon on affiche l'écran de login
+      return const AdminLogin(); // Vérifie que le nom est bien AdminLogin ou LoginScreen
+    }
   }
 }
