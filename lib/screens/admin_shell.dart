@@ -225,12 +225,10 @@ class CityFixSidebar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-
             color: isSelected
                 ? const Color(0xFF2563EB)
                 : Colors.transparent, // Bleu électrique
 
-            color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
