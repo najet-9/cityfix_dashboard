@@ -1,3 +1,4 @@
+import 'package:admin_dashboard/screens/admin_alerts.dart';
 import 'package:admin_dashboard/controllers/auth_controller.dart';
 import 'package:admin_dashboard/screens/admin_login.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:admin_dashboard/screens/overview_page.dart';
 import 'package:admin_dashboard/screens/reports_screen.dart';
 import 'package:admin_dashboard/screens/Users_screen.dart';
-import 'package:admin_dashboard/screens/admin_alerts.dart';
+import 'package:admin_dashboard/screens/category_page.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -22,6 +23,9 @@ class _AdminShellState extends State<AdminShell> {
     const ReportsScreen(),
     const UsersScreen(),
     const AdminAlerts(),
+
+    CategoryPage(),
+
     const Center(
       child: Text("Categories Page", style: TextStyle(fontSize: 24)),
     ),
@@ -102,6 +106,7 @@ class CityFixSidebar extends StatelessWidget {
             isSelected: selectedIndex == 1,
             badge: "24",
           ),
+
           const SizedBox(height: 24),
           _buildSectionHeader("MANAGEMENT"),
           _buildMenuItem(
@@ -123,6 +128,7 @@ class CityFixSidebar extends StatelessWidget {
             "Categories",
             isSelected: selectedIndex == 4,
           ),
+
           const SizedBox(height: 24),
           _buildSectionHeader("SYSTEM"),
           _buildMenuItem(
@@ -219,7 +225,10 @@ class CityFixSidebar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+            color: isSelected
+                ? const Color(0xFF2563EB)
+                : Colors.transparent, // Bleu électrique
+
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
