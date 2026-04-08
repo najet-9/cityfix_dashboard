@@ -1,3 +1,6 @@
+import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/screens/admin_login.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:admin_dashboard/screens/admin_login.dart';
@@ -6,13 +9,15 @@ import 'package:admin_dashboard/screens/admin_shell.dart';
 import 'package:admin_dashboard/state/app_state.dart';
 import 'package:admin_dashboard/theme/app_theme.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthState()),
-        ChangeNotifierProvider(create: (_) => DashboardState()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AdminAuthController())],
       child: const CityFixAdminApp(),
     ),
   );
@@ -26,6 +31,7 @@ class CityFixAdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'CityFix — Admin Dashboard',
       debugShowCheckedModeBanner: false,
+
 
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const AuthWrapper(),
@@ -48,5 +54,10 @@ class AuthWrapper extends StatelessWidget {
       // Sinon on affiche l'écran de login
       return const AdminLogin();
     }
+  }
+}
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const AdminLogin(),
+    );
   }
 }

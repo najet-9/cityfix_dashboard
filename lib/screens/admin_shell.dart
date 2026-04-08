@@ -1,4 +1,6 @@
 import 'package:admin_dashboard/screens/admin_alerts.dart';
+import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/screens/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:admin_dashboard/screens/overview_page.dart';
@@ -13,34 +15,47 @@ class AdminShell extends StatefulWidget {
 }
 
 class _AdminShellState extends State<AdminShell> {
+  final AdminAuthController _authController = AdminAuthController();
   int _selectedIndex = 0;
-  // Liste des pages de ton application
+
   final List<Widget> _pages = [
     const OverviewPage(),
     const ReportsScreen(),
     const UsersScreen(),
     const AdminAlerts(),
+
     CategoryPage(),
+
+    const Center(
+      child: Text("Categories Page", style: TextStyle(fontSize: 24)),
+    ),
     const Center(child: Text("Settings Page", style: TextStyle(fontSize: 24))),
     const Center(
       child: Text("Activity Logs Page", style: TextStyle(fontSize: 24)),
     ),
   ];
+
+  Future<void> _signOut() async {
+    await _authController.signOut();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const AdminLogin()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
         children: [
-          // 1. TA SIDEBAR
           CityFixSidebar(
             selectedIndex: _selectedIndex,
             onItemSelected: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
+              setState(() => _selectedIndex = index);
             },
+            onSignOut: _signOut,
           ),
-          // 2. LA ZONE DE CONTENU DYNAMIQUE (À droite)
           Expanded(
             child: Container(
               color: const Color(0xFFF8FAFC),
@@ -56,14 +71,18 @@ class _AdminShellState extends State<AdminShell> {
 class CityFixSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
+  final VoidCallback onSignOut;
+
   const CityFixSidebar({
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
+    required this.onSignOut,
   });
+
   @override
   Widget build(BuildContext context) {
-    const Color sidebarBg = Color(0xFF0F172A); // Bleu nuit profond
+    const Color sidebarBg = Color(0xFF0F172A);
     return Container(
       width: 260,
       color: sidebarBg,
@@ -73,7 +92,6 @@ class CityFixSidebar extends StatelessWidget {
           const SizedBox(height: 32),
           _buildLogo(),
           const SizedBox(height: 40),
-          // Section OVERVIEW
           _buildSectionHeader("OVERVIEW"),
           _buildMenuItem(
             0,
@@ -90,7 +108,6 @@ class CityFixSidebar extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          // Section MANAGEMENt
           _buildSectionHeader("MANAGEMENT"),
           _buildMenuItem(
             2,
@@ -113,8 +130,6 @@ class CityFixSidebar extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-
-          // Section SYSTEM
           _buildSectionHeader("SYSTEM"),
           _buildMenuItem(
             5,
@@ -128,10 +143,7 @@ class CityFixSidebar extends StatelessWidget {
             "Activity Logs",
             isSelected: selectedIndex == 6,
           ),
-
           const Spacer(),
-
-          // Carte Profil Admin en bas
           _buildAdminProfile(),
           const SizedBox(height: 24),
         ],
@@ -213,9 +225,12 @@ class CityFixSidebar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
+
             color: isSelected
                 ? const Color(0xFF2563EB)
                 : Colors.transparent, // Bleu électrique
+
+            color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -243,7 +258,7 @@ class CityFixSidebar extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444), // Badge rouge
+                    color: const Color(0xFFEF4444),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -275,7 +290,7 @@ class CityFixSidebar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.orange, // Avatar orange
+              color: Colors.orange,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
@@ -305,7 +320,15 @@ class CityFixSidebar extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          const Icon(Icons.logout_rounded, color: Colors.white24, size: 20),
+          IconButton(
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: Colors.white38,
+              size: 20,
+            ),
+            onPressed: onSignOut,
+            tooltip: 'Sign out',
+          ),
         ],
       ),
     );
