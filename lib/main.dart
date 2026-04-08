@@ -1,18 +1,16 @@
+import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/screens/admin_login.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:admin_dashboard/screens/admin_login.dart'; 
-import 'package:admin_dashboard/screens/overview_page.dart'; 
-import 'package:admin_dashboard/screens/admin_shell.dart'; 
-import 'package:admin_dashboard/state/app_state.dart'; 
-import 'package:admin_dashboard/theme/app_theme.dart'; 
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthState()),
-        ChangeNotifierProvider(create: (_) => DashboardState()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AdminAuthController())],
       child: const CityFixAdminApp(),
     ),
   );
@@ -26,27 +24,8 @@ class CityFixAdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'CityFix — Admin Dashboard',
       debugShowCheckedModeBanner: false,
-
-      theme: ThemeData(primarySwatch: Colors.blue), 
-      home: const AuthWrapper(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const AdminLogin(),
     );
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Écoute les changements d'authentification
-    final authState = context.watch<AuthState>();
-    
-    if (authState.isAuthenticated) {
-      // Si connecté, on affiche le Shell 
-      return const AdminShell(); 
-    } else {
-      // Sinon on affiche l'écran de login
-      return const AdminLogin(); 
-    }
   }
 }

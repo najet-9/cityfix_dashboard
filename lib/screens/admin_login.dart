@@ -1,6 +1,8 @@
+import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/screens/admin_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:admin_dashboard/screens/admin_shell.dart'; 
+import 'package:provider/provider.dart';
 
 class AdminLogin extends StatefulWidget {
   const AdminLogin({super.key});
@@ -14,6 +16,50 @@ class _AdminLoginState extends State<AdminLogin> {
   bool _rememberMe = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _signIn() async {
+    try {
+      setState(() => _isLoading = true);
+      await context.read<AdminAuthController>().signIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      // both checks passed — navigate
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminShell()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                e.toString().replaceAll('Exception: ', ''),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +71,18 @@ class _AdminLoginState extends State<AdminLogin> {
       backgroundColor: Colors.white,
       body: Row(
         children: [
-          // --- PARTIE GAUCHE 
+          // --- PARTIE GAUCHE
           Expanded(
-            flex: 65, 
+            flex: 65,
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color.fromARGB(255, 23, 54, 157), 
-                    Color.fromARGB(255, 31, 96, 235), 
-                    Color(0xFF1E3A8A)
+                    Color.fromARGB(255, 23, 54, 157),
+                    Color.fromARGB(255, 31, 96, 235),
+                    Color(0xFF1E3A8A),
                   ],
                 ),
               ),
@@ -53,26 +99,53 @@ class _AdminLoginState extends State<AdminLogin> {
                           color: Colors.white.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.location_city, color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.location_city,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 15),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("CityFix", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                          const Text("ADMIN CONSOLE", style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.w500)),
+                          Text(
+                            "CityFix",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            "ADMIN CONSOLE",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                   const Spacer(),
                   // Texte Principal
                   RichText(
                     text: TextSpan(
-                      style: GoogleFonts.plusJakartaSans(fontSize: 56, fontWeight: FontWeight.w800, color: Colors.white, height: 1.1),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 56,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.1,
+                      ),
                       children: const [
                         TextSpan(text: "Manage your "),
-                        TextSpan(text: "city", style: TextStyle(color: Color(0xFFFBBF24))),
+                        TextSpan(
+                          text: "city",
+                          style: TextStyle(color: Color(0xFFFBBF24)),
+                        ),
                         TextSpan(text: "\nsmarter & faster."),
                       ],
                     ),
@@ -82,7 +155,11 @@ class _AdminLoginState extends State<AdminLogin> {
                     width: 500,
                     child: Text(
                       "Track civic reports, monitor infrastructure issues, and coordinate city-wide resolutions — all from a single powerful dashboard.",
-                      style: TextStyle(color: Colors.white70, fontSize: 18, height: 1.6),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 18,
+                        height: 1.6,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -95,13 +172,13 @@ class _AdminLoginState extends State<AdminLogin> {
                       const SizedBox(width: 60),
                       _buildStatItem("58", "Wilayas"),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
           ),
 
-          // --- PARTIE DROITE 
+          // --- PARTIE DROITE
           Expanded(
             flex: 35,
             child: Padding(
@@ -110,61 +187,84 @@ class _AdminLoginState extends State<AdminLogin> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Welcome back 👋", style: GoogleFonts.plusJakartaSans(fontSize: 32, fontWeight: FontWeight.w800, color: darkSidebar)),
+                  Text(
+                    "Welcome back 👋",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: darkSidebar,
+                    ),
+                  ),
                   const SizedBox(height: 10),
-                  const Text("Sign in to the CityFix admin portal to continue.", style: TextStyle(color: textGrey, fontSize: 15)),
+                  const Text(
+                    "Sign in to the CityFix admin portal to continue.",
+                    style: TextStyle(color: textGrey, fontSize: 15),
+                  ),
                   const SizedBox(height: 48),
 
-                  const Text("Email address", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: darkSidebar)),
+                  const Text(
+                    "Email address",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: darkSidebar,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   _buildInput(
-                    hint: "email address", 
+                    hint: "email address",
                     icon: Icons.email_outlined,
                     controller: _emailController,
                   ),
-                  
+
                   const SizedBox(height: 24),
 
-                  const Text("Password", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: darkSidebar)),
+                  const Text(
+                    "Password",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: darkSidebar,
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   _buildInput(
-                    hint: "password", 
-                    icon: Icons.lock_outline, 
+                    hint: "password",
+                    icon: Icons.lock_outline,
                     isPassword: true,
                     controller: _passwordController,
                     suffix: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: textGrey),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    )
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 18,
+                        color: textGrey,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            child: Checkbox(
-                              value: _rememberMe, 
-                              onChanged: (v) => setState(() => _rememberMe = v!),
-                              activeColor: cityfixBlue,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text("Remember me", style: TextStyle(color: textGrey, fontSize: 14)),
-                        ],
-                      ),
                       TextButton(
-                        onPressed: () {}, 
-                        child: const Text("Forgot password?", style: TextStyle(color: cityfixBlue, fontWeight: FontWeight.w600, fontSize: 14))
+                        onPressed: () {},
+                        child: const Text(
+                          "Forgot password?",
+                          style: TextStyle(
+                            color: cityfixBlue,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 32),
 
                   // BOUTON COMME SUR LA PHOTO
@@ -182,42 +282,39 @@ class _AdminLoginState extends State<AdminLogin> {
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_emailController.text == "admin@cityfix.dz" && _passwordController.text == "admin123") {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminShell()));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Incorrect credentials")));
-                        }
-                      },
+                      onPressed: _isLoading ? null : _signIn,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cityfixBlue,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.login_rounded, color: Colors.white, size: 20),
-                          const SizedBox(width: 10),
-                          Text("Sign in to Dashboard", style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        ],
-                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.login_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  "Sign in to Dashboard",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  // Demo credentials
-                  Center(
-                    child: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(color: textGrey, fontSize: 12),
-                        children: [
-                          TextSpan(text: "Demo credentials: "),
-                          TextSpan(text: "admin@cityfix.dz / admin123", style: TextStyle(color: darkSidebar, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -231,13 +328,33 @@ class _AdminLoginState extends State<AdminLogin> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(val, style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800)),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+        Text(
+          val,
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildInput({required String hint, required IconData icon, bool isPassword = false, Widget? suffix, TextEditingController? controller}) {
+  Widget _buildInput({
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    Widget? suffix,
+    TextEditingController? controller,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? _obscurePassword : false,
