@@ -25,7 +25,7 @@ class _AdminLoginState extends State<AdminLogin> {
       backgroundColor: Colors.white,
       body: Row(
         children: [
-          // --- PARTIE GAUCHE (LARGE) ---
+          // --- PARTIE GAUCHE 
           Expanded(
             flex: 65, 
             child: Container(
@@ -101,9 +101,9 @@ class _AdminLoginState extends State<AdminLogin> {
             ),
           ),
 
-          // --- PARTIE DROITE (FORMULAIRE) ---
+          // --- PARTIE DROITE 
           Expanded(
-            flex: 35, // 3.5/10 de l'écran
+            flex: 35,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 60),
               child: Column(

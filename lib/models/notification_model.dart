@@ -7,7 +7,7 @@ class NotificationModel {
   String message;
   Timestamp? createdAt;
   bool isRead;
-  String type; // e.g., 'resolved', 'assigned', 'urgent', 'confirmation'
+  String type; 
 
   NotificationModel({
     this.notificationId,

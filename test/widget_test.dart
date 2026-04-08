@@ -17,8 +17,7 @@ void main() {
       ),
     );
 
-    // Comme ton application démarre sur l'AuthWrapper, 
-    // on vérifie si l'écran de login est présent (puisqu'on n'est pas connecté)
+    // on vérifie si l'écran de login est présent 
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }

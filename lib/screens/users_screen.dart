@@ -53,7 +53,7 @@ class UsersScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   
-                  // GRILLE DES UTILISATEURS - Ajustée pour être moins haute
+                  // GRILLE DES UTILISATEURS
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -136,7 +136,7 @@ class UsersScreen extends StatelessWidget {
     );
   }
 
-  // --- USER CARD COMPONENT MODIFIÉ ---
+  // --- USER CARD COMPONENT ---
   Widget _buildUserCard(String name, String email, String city, String initials, Color color, int reports, int resolved, String rate) {
     return Container(
       decoration: BoxDecoration(

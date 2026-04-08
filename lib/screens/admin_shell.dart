@@ -1,51 +1,47 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:admin_dashboard/screens/overview_page.dart'; 
-import 'package:admin_dashboard/screens/reports_screen.dart'; 
-import 'package:admin_dashboard/screens/Users_screen.dart'; 
+import 'package:admin_dashboard/screens/overview_page.dart';
+import 'package:admin_dashboard/screens/reports_screen.dart';
+import 'package:admin_dashboard/screens/Users_screen.dart';
 import 'package:admin_dashboard/screens/admin_alerts.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
-
   @override
   State<AdminShell> createState() => _AdminShellState();
 }
 
 class _AdminShellState extends State<AdminShell> {
   int _selectedIndex = 0;
-
   // Liste des pages de ton application
   final List<Widget> _pages = [
-    const OverviewPage(),     
-    const ReportsScreen(),     
-    const UsersScreen(),       
+    const OverviewPage(),    
+    const ReportsScreen(),    
+    const UsersScreen(),      
     const AdminAlerts(),
     const Center(child: Text("Categories Page", style: TextStyle(fontSize: 24))),
     const Center(child: Text("Settings Page", style: TextStyle(fontSize: 24))),
     const Center(child: Text("Activity Logs Page", style: TextStyle(fontSize: 24))),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
         children: [
-          // 1. TA SIDEBAR 
+          // 1. TA SIDEBAR
           CityFixSidebar(
             selectedIndex: _selectedIndex,
             onItemSelected: (index) {
               setState(() {
-                _selectedIndex = index; 
+                _selectedIndex = index;
               });
             },
           ),
-
           // 2. LA ZONE DE CONTENU DYNAMIQUE (À droite)
           Expanded(
             child: Container(
               color: const Color(0xFFF8FAFC),
-              child: _pages[_selectedIndex], 
+              child: _pages[_selectedIndex],
             ),
           ),
         ],
@@ -58,17 +54,14 @@ class _AdminShellState extends State<AdminShell> {
 class CityFixSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
-
   const CityFixSidebar({
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
   });
-
   @override
   Widget build(BuildContext context) {
     const Color sidebarBg = Color(0xFF0F172A); // Bleu nuit profond
-
     return Container(
       width: 260,
       color: sidebarBg,
@@ -78,15 +71,13 @@ class CityFixSidebar extends StatelessWidget {
           const SizedBox(height: 32),
           _buildLogo(),
           const SizedBox(height: 40),
-
           // Section OVERVIEW
           _buildSectionHeader("OVERVIEW"),
           _buildMenuItem(0, Icons.grid_view_rounded, "Dashboard", isSelected: selectedIndex == 0),
           _buildMenuItem(1, Icons.flag_rounded, "Reports", isSelected: selectedIndex == 1, badge: "24"),
 
           const SizedBox(height: 24),
-
-          // Section MANAGEMENT
+          // Section MANAGEMENt
           _buildSectionHeader("MANAGEMENT"),
           _buildMenuItem(2, Icons.people_alt_rounded, "Users", isSelected: selectedIndex == 2),
           _buildMenuItem(3, Icons.notifications_rounded, "Alerts", isSelected: selectedIndex == 3, badge: "3"),
