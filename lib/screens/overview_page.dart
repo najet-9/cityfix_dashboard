@@ -1,11 +1,15 @@
+import 'package:admin_dashboard/controllers/overView_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:admin_dashboard/theme/app_theme.dart';
 import 'package:admin_dashboard/data/mock_data.dart';
 import 'package:admin_dashboard/widgets/stat_card.dart';
 import 'package:admin_dashboard/widgets/report_table.dart';
+
+import 'package:admin_dashboard/models/dashboard_stats_model.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -13,15 +17,22 @@ class OverviewPage extends StatefulWidget {
   State<OverviewPage> createState() => _OverviewPageState();
 }
 
-class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderStateMixin {
+class _OverviewPageState extends State<OverviewPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(_pulseController);
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(_pulseController);
   }
 
   @override
@@ -36,10 +47,10 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // --- INTEGRATED TOP BAR ---
+          // --- TOP BAR ---
           _buildTopBar(),
-          
-          // --- EXISTING DASHBOARD CONTENT ---
+
+          // --- DASHBOARD CONTENT ---
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
@@ -53,34 +64,65 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Good morning, Admin 👋', 
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.text, letterSpacing: -0.5)),
+                          const Text(
+                            'Good morning, Admin 👋',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.text,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
                           const SizedBox(height: 3),
                           Row(
                             children: [
                               FadeTransition(
                                 opacity: _pulseAnimation,
                                 child: Container(
-                                  width: 7, height: 7,
+                                  width: 7,
+                                  height: 7,
                                   margin: const EdgeInsets.only(right: 6),
-                                  decoration: const BoxDecoration(color: AppTheme.accent2, shape: BoxShape.circle),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.accent2,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
                               ),
-                              const Text('Live data · Last updated just now', 
-                                style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                              const Text(
+                                'Live data · Last updated just now',
+                                style: TextStyle(
+                                  color: AppTheme.textMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: const FaIcon(FontAwesomeIcons.fileExport, size: 13, color: Colors.white),
-                        label: const Text('Export Report', 
-                          style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        icon: const FaIcon(
+                          FontAwesomeIcons.fileExport,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Export Report',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           elevation: 4,
                           shadowColor: AppTheme.primary.withOpacity(0.3),
                         ),
@@ -89,40 +131,99 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                   ),
                   const SizedBox(height: 24),
 
-                  // Stats Grid
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final crossAxisCount = MediaQuery.of(context).size.width > 1200 ? 4 : 2;
-                      final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 20) / crossAxisCount;
-                      return GridView.count(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 20,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: itemWidth / 175.0,
-                        children: const [
-                          StatCard(
-                            icon: FaIcon(FontAwesomeIcons.flag, color: AppTheme.primary, size: 18), iconBg: AppTheme.primaryLighter,
-                            gradientStart: AppTheme.primary, gradientEnd: AppTheme.primaryLight,
-                            trend: '+12%', isUp: true, value: '127', label: 'Total Reports',
+                  // --- Stats Grid (Firestore-driven) ---
+                  Consumer<DashboardController>(
+                    builder: (context, controller, _) {
+                      // Loading state
+                      if (controller.isLoading) {
+                        return const SizedBox(
+                          height: 175,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+
+                      // Error state
+                      if (controller.errorMessage != null) {
+                        return SizedBox(
+                          height: 175,
+                          child: Center(
+                            child: Text(
+                              controller.errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
                           ),
-                          StatCard(
-                            icon: FaIcon(FontAwesomeIcons.circleCheck, color: Color(0xFF059669), size: 18), iconBg: Color(0xFFD1FAE5),
-                            gradientStart: Color(0xFF059669), gradientEnd: AppTheme.accent2,
-                            trend: '+8%', isUp: true, value: '78', label: 'Resolved',
-                          ),
-                          StatCard(
-                            icon: FaIcon(FontAwesomeIcons.clock, color: Color(0xFFD97706), size: 18), iconBg: Color(0xFFFEF3C7),
-                            gradientStart: Color(0xFFD97706), gradientEnd: AppTheme.accent,
-                            trend: '-3%', isUp: false, value: '34', label: 'Pending',
-                          ),
-                          StatCard(
-                            icon: FaIcon(FontAwesomeIcons.users, color: Color(0xFFDC2626), size: 18), iconBg: Color(0xFFFEE2E2),
-                            gradientStart: Color(0xFFDC2626), gradientEnd: AppTheme.danger,
-                            trend: '+22%', isUp: true, value: '101', label: 'Active Citizens',
-                          ),
-                        ],
+                        );
+                      }
+
+                      final DashboardStatsModel s = controller.stats!;
+
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          final crossAxisCount =
+                              MediaQuery.of(context).size.width > 1200 ? 4 : 2;
+                          final itemWidth =
+                              (constraints.maxWidth -
+                                  (crossAxisCount - 1) * 20) /
+                              crossAxisCount;
+                          return GridView.count(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 20,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            childAspectRatio: itemWidth / 175.0,
+                            children: [
+                              StatCard(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.flag,
+                                  color: AppTheme.primary,
+                                  size: 18,
+                                ),
+                                iconBg: AppTheme.primaryLighter,
+                                gradientStart: AppTheme.primary,
+                                gradientEnd: AppTheme.primaryLight,
+                                value: s.totalReports.toString(),
+                                label: 'Total Reports',
+                              ),
+                              StatCard(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.circleCheck,
+                                  color: Color(0xFF059669),
+                                  size: 18,
+                                ),
+                                iconBg: const Color(0xFFD1FAE5),
+                                gradientStart: const Color(0xFF059669),
+                                gradientEnd: AppTheme.accent2,
+                                value: s.resolved.toString(),
+                                label: 'Resolved',
+                              ),
+                              StatCard(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.clock,
+                                  color: Color(0xFFD97706),
+                                  size: 18,
+                                ),
+                                iconBg: const Color(0xFFFEF3C7),
+                                gradientStart: const Color(0xFFD97706),
+                                gradientEnd: AppTheme.accent,
+                                value: s.pending.toString(),
+                                label: 'Pending',
+                              ),
+                              StatCard(
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.users,
+                                  color: Color(0xFFDC2626),
+                                  size: 18,
+                                ),
+                                iconBg: const Color(0xFFFEE2E2),
+                                gradientStart: const Color(0xFFDC2626),
+                                gradientEnd: AppTheme.danger,
+                                value: s.activeCitizens.toString(),
+                                label: 'Active Citizens',
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
                   ),
@@ -137,7 +238,9 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppTheme.radius),
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radius,
+                            ),
                             border: Border.all(color: AppTheme.border),
                           ),
                           child: Column(
@@ -146,29 +249,61 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                               Padding(
                                 padding: const EdgeInsets.all(24.0),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('Reports Over Time', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.text)),
+                                        Text(
+                                          'Reports Over Time',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.text,
+                                          ),
+                                        ),
                                         SizedBox(height: 2),
-                                        Text('Monthly report submissions — 2026', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                                        Text(
+                                          'Monthly report submissions — 2026',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppTheme.textMuted,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
-                                        border: Border.all(color: AppTheme.border, width: 1.5),
+                                        border: Border.all(
+                                          color: AppTheme.border,
+                                          width: 1.5,
+                                        ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Text('2026', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
-                                    )
+                                      child: const Text(
+                                        '2026',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppTheme.textMuted,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  0,
+                                  24,
+                                  24,
+                                ),
                                 child: SizedBox(
                                   height: 250,
                                   child: _buildLineChart(),
@@ -194,9 +329,22 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('By Category', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.text)),
+                                  Text(
+                                    'By Category',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.text,
+                                    ),
+                                  ),
                                   SizedBox(height: 2),
-                                  Text('Distribution of report types', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                                  Text(
+                                    'Distribution of report types',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -210,8 +358,23 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                                   const Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('406', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppTheme.text, letterSpacing: -1)),
-                                      Text('Total', style: TextStyle(fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.w500)),
+                                      Text(
+                                        '406',
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppTheme.text,
+                                          letterSpacing: -1,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Total',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppTheme.textMuted,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -222,11 +385,36 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                               padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                               child: Column(
                                 children: [
-                                  _buildLegendItem('Roads', 134, const Color(0xFF1D4ED8), 0.72),
-                                  _buildLegendItem('Lighting', 97, const Color(0xFFF59E0B), 0.55),
-                                  _buildLegendItem('Water', 57, const Color(0xFF10B981), 0.40),
-                                  _buildLegendItem('Waste', 79, const Color(0xFFEF4444), 0.30),
-                                  _buildLegendItem('Other', 39, const Color(0xFF8B5CF6), 0.22),
+                                  _buildLegendItem(
+                                    'Roads',
+                                    134,
+                                    const Color(0xFF1D4ED8),
+                                    0.72,
+                                  ),
+                                  _buildLegendItem(
+                                    'Lighting',
+                                    97,
+                                    const Color(0xFFF59E0B),
+                                    0.55,
+                                  ),
+                                  _buildLegendItem(
+                                    'Water',
+                                    57,
+                                    const Color(0xFF10B981),
+                                    0.40,
+                                  ),
+                                  _buildLegendItem(
+                                    'Waste',
+                                    79,
+                                    const Color(0xFFEF4444),
+                                    0.30,
+                                  ),
+                                  _buildLegendItem(
+                                    'Other',
+                                    39,
+                                    const Color(0xFF8B5CF6),
+                                    0.22,
+                                  ),
                                 ],
                               ),
                             ),
@@ -255,23 +443,42 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                               const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Recent Reports', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.text)),
+                                  Text(
+                                    'Recent Reports',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.text,
+                                    ),
+                                  ),
                                   SizedBox(height: 2),
-                                  Text('Latest citizen-submitted issues', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                                  Text(
+                                    'Latest citizen-submitted issues',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  ),
                                 ],
                               ),
                               TextButton.icon(
                                 onPressed: () {},
-                                icon: const FaIcon(FontAwesomeIcons.arrowRight, size: 12),
-                                label: const Text('View all', style: TextStyle(fontSize: 12)),
-                              )
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.arrowRight,
+                                  size: 12,
+                                ),
+                                label: const Text(
+                                  'View all',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         ReportTable(reports: reportsList.take(8).toList()),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -281,7 +488,7 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
     );
   }
 
-  // --- TOP BAR WIDGET 
+  // --- TOP BAR ---
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -291,8 +498,14 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
       ),
       child: Row(
         children: [
-          Text("Dashboard Overview", 
-            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 16, color: AppTheme.text)),
+          Text(
+            "Dashboard Overview",
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: AppTheme.text,
+            ),
+          ),
           const Spacer(),
           Container(
             width: 350,
@@ -305,7 +518,11 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
               decoration: InputDecoration(
                 hintText: "Search analytics, reports...",
                 hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                prefixIcon: Icon(Icons.search, size: 18, color: Color(0xFF64748B)),
+                prefixIcon: Icon(
+                  Icons.search,
+                  size: 18,
+                  color: Color(0xFF64748B),
+                ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 8),
               ),
@@ -341,23 +558,43 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
             top: -4,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
-              child: Text(badge, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+              decoration: const BoxDecoration(
+                color: Color(0xFFEF4444),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                badge,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          )
+          ),
       ],
     );
   }
 
-  // --- REMAINING CHART & LEGEND WIDGETS ---
+  // --- CHART WIDGETS ---
   Widget _buildLegendItem(String name, int count, Color color, double percent) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 10),
-          Expanded(flex: 2, child: Text(name, style: const TextStyle(fontSize: 13, color: AppTheme.textMuted))),
+          Expanded(
+            flex: 2,
+            child: Text(
+              name,
+              style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            ),
+          ),
           Expanded(
             flex: 3,
             child: Row(
@@ -376,7 +613,15 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
                 const SizedBox(width: 10),
                 SizedBox(
                   width: 30,
-                  child: Text(count.toString(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.text), textAlign: TextAlign.right),
+                  child: Text(
+                    count.toString(),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.text,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
                 ),
               ],
             ),
@@ -389,18 +634,50 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
   Widget _buildLineChart() {
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 100, getDrawingHorizontalLine: (value) => FlLine(color: AppTheme.border, strokeWidth: 1)),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: 100,
+          getDrawingHorizontalLine: (value) =>
+              FlLine(color: AppTheme.border, strokeWidth: 1),
+        ),
         titlesData: FlTitlesData(
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
-                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const months = [
+                  'Jan',
+                  'Feb',
+                  'Mar',
+                  'Apr',
+                  'May',
+                  'Jun',
+                  'Jul',
+                  'Aug',
+                  'Sep',
+                  'Oct',
+                  'Nov',
+                  'Dec',
+                ];
                 if (value.toInt() >= 0 && value.toInt() < 12) {
-                  return Padding(padding: const EdgeInsets.only(top: 8.0), child: Text(months[value.toInt()], style: const TextStyle(color: AppTheme.textLight, fontSize: 12)));
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      months[value.toInt()],
+                      style: const TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 12,
+                      ),
+                    ),
+                  );
                 }
                 return const SizedBox();
               },
@@ -409,7 +686,10 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: const TextStyle(color: AppTheme.textLight, fontSize: 12)),
+              getTitlesWidget: (value, meta) => Text(
+                value.toInt().toString(),
+                style: const TextStyle(color: AppTheme.textLight, fontSize: 12),
+              ),
               reservedSize: 40,
             ),
           ),
@@ -417,16 +697,54 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
         borderData: FlBorderData(show: false),
         lineBarsData: [
           LineChartBarData(
-            spots: const [FlSpot(0,120),FlSpot(1,185),FlSpot(2,210),FlSpot(3,162),FlSpot(4,250),FlSpot(5,285),FlSpot(6,240),FlSpot(7,290),FlSpot(8,320),FlSpot(9,275),FlSpot(10,350),FlSpot(11,410)],
-            isCurved: true, color: const Color(0xFF1D4ED8), barWidth: 2.5,
-            isStrokeCapRound: true, dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(show: true, color: const Color(0xFF1D4ED8).withOpacity(0.07)),
+            spots: const [
+              FlSpot(0, 120),
+              FlSpot(1, 185),
+              FlSpot(2, 210),
+              FlSpot(3, 162),
+              FlSpot(4, 250),
+              FlSpot(5, 285),
+              FlSpot(6, 240),
+              FlSpot(7, 290),
+              FlSpot(8, 320),
+              FlSpot(9, 275),
+              FlSpot(10, 350),
+              FlSpot(11, 410),
+            ],
+            isCurved: true,
+            color: const Color(0xFF1D4ED8),
+            barWidth: 2.5,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(
+              show: true,
+              color: const Color(0xFF1D4ED8).withOpacity(0.07),
+            ),
           ),
           LineChartBarData(
-            spots: const [FlSpot(0,95),FlSpot(1,140),FlSpot(2,180),FlSpot(3,130),FlSpot(4,200),FlSpot(5,240),FlSpot(6,195),FlSpot(7,255),FlSpot(8,280),FlSpot(9,230),FlSpot(10,300),FlSpot(11,370)],
-            isCurved: true, color: const Color(0xFF10B981), barWidth: 2,
-            isStrokeCapRound: true, dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(show: true, color: const Color(0xFF10B981).withOpacity(0.05)),
+            spots: const [
+              FlSpot(0, 95),
+              FlSpot(1, 140),
+              FlSpot(2, 180),
+              FlSpot(3, 130),
+              FlSpot(4, 200),
+              FlSpot(5, 240),
+              FlSpot(6, 195),
+              FlSpot(7, 255),
+              FlSpot(8, 280),
+              FlSpot(9, 230),
+              FlSpot(10, 300),
+              FlSpot(11, 370),
+            ],
+            isCurved: true,
+            color: const Color(0xFF10B981),
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(
+              show: true,
+              color: const Color(0xFF10B981).withOpacity(0.05),
+            ),
           ),
         ],
       ),
@@ -439,11 +757,36 @@ class _OverviewPageState extends State<OverviewPage> with SingleTickerProviderSt
         sectionsSpace: 0,
         centerSpaceRadius: 65,
         sections: [
-          PieChartSectionData(color: const Color(0xFF1D4ED8), value: 1042, radius: 25, showTitle: false),
-          PieChartSectionData(color: const Color(0xFFF59E0B), value: 634, radius: 25, showTitle: false),
-          PieChartSectionData(color: const Color(0xFF10B981), value: 512, radius: 25, showTitle: false),
-          PieChartSectionData(color: const Color(0xFFEF4444), value: 384, radius: 25, showTitle: false),
-          PieChartSectionData(color: const Color(0xFF8B5CF6), value: 275, radius: 25, showTitle: false),
+          PieChartSectionData(
+            color: const Color(0xFF1D4ED8),
+            value: 1042,
+            radius: 25,
+            showTitle: false,
+          ),
+          PieChartSectionData(
+            color: const Color(0xFFF59E0B),
+            value: 634,
+            radius: 25,
+            showTitle: false,
+          ),
+          PieChartSectionData(
+            color: const Color(0xFF10B981),
+            value: 512,
+            radius: 25,
+            showTitle: false,
+          ),
+          PieChartSectionData(
+            color: const Color(0xFFEF4444),
+            value: 384,
+            radius: 25,
+            showTitle: false,
+          ),
+          PieChartSectionData(
+            color: const Color(0xFF8B5CF6),
+            value: 275,
+            radius: 25,
+            showTitle: false,
+          ),
         ],
       ),
     );
