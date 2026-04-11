@@ -1,5 +1,3 @@
-// lib/models/dashboard_stats_model.dart
-
 class DashboardStatsModel {
   final int totalReports;
   final int resolved;
