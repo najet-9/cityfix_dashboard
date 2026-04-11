@@ -7,6 +7,8 @@ import 'package:admin_dashboard/screens/overview_page.dart';
 import 'package:admin_dashboard/screens/reports_screen.dart';
 import 'package:admin_dashboard/screens/Users_screen.dart';
 import 'package:admin_dashboard/screens/category_page.dart';
+import 'package:admin_dashboard/screens/settings_page.dart';
+import 'package:admin_dashboard/screens/logs_page.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -23,16 +25,9 @@ class _AdminShellState extends State<AdminShell> {
     const ReportsScreen(),
     const UsersScreen(),
     const AdminAlerts(),
-
     CategoryPage(),
-
-    const Center(
-      child: Text("Categories Page", style: TextStyle(fontSize: 24)),
-    ),
-    const Center(child: Text("Settings Page", style: TextStyle(fontSize: 24))),
-    const Center(
-      child: Text("Activity Logs Page", style: TextStyle(fontSize: 24)),
-    ),
+    const SettingsPage(),
+    const LogsPage(),
   ];
 
   Future<void> _signOut() async {
@@ -92,58 +87,67 @@ class CityFixSidebar extends StatelessWidget {
           const SizedBox(height: 32),
           _buildLogo(),
           const SizedBox(height: 40),
-          _buildSectionHeader("OVERVIEW"),
-          _buildMenuItem(
-            0,
-            Icons.grid_view_rounded,
-            "Dashboard",
-            isSelected: selectedIndex == 0,
-          ),
-          _buildMenuItem(
-            1,
-            Icons.flag_rounded,
-            "Reports",
-            isSelected: selectedIndex == 1,
-            badge: "24",
-          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader("OVERVIEW"),
+                  _buildMenuItem(
+                    0,
+                    Icons.grid_view_rounded,
+                    "Dashboard",
+                    isSelected: selectedIndex == 0,
+                  ),
+                  _buildMenuItem(
+                    1,
+                    Icons.flag_rounded,
+                    "Reports",
+                    isSelected: selectedIndex == 1,
+                    badge: "24",
+                  ),
 
-          const SizedBox(height: 24),
-          _buildSectionHeader("MANAGEMENT"),
-          _buildMenuItem(
-            2,
-            Icons.people_alt_rounded,
-            "Users",
-            isSelected: selectedIndex == 2,
-          ),
-          _buildMenuItem(
-            3,
-            Icons.notifications_rounded,
-            "Alerts",
-            isSelected: selectedIndex == 3,
-            badge: "3",
-          ),
-          _buildMenuItem(
-            4,
-            Icons.local_offer_rounded,
-            "Categories",
-            isSelected: selectedIndex == 4,
-          ),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("MANAGEMENT"),
+                  _buildMenuItem(
+                    2,
+                    Icons.people_alt_rounded,
+                    "Users",
+                    isSelected: selectedIndex == 2,
+                  ),
+                  _buildMenuItem(
+                    3,
+                    Icons.notifications_rounded,
+                    "Alerts",
+                    isSelected: selectedIndex == 3,
+                    badge: "3",
+                  ),
+                  _buildMenuItem(
+                    4,
+                    Icons.local_offer_rounded,
+                    "Categories",
+                    isSelected: selectedIndex == 4,
+                  ),
 
-          const SizedBox(height: 24),
-          _buildSectionHeader("SYSTEM"),
-          _buildMenuItem(
-            5,
-            Icons.settings_rounded,
-            "Settings",
-            isSelected: selectedIndex == 5,
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("SYSTEM"),
+                  _buildMenuItem(
+                    5,
+                    Icons.settings_rounded,
+                    "Settings",
+                    isSelected: selectedIndex == 5,
+                  ),
+                  _buildMenuItem(
+                    6,
+                    Icons.terminal_rounded,
+                    "Activity Logs",
+                    isSelected: selectedIndex == 6,
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
           ),
-          _buildMenuItem(
-            6,
-            Icons.terminal_rounded,
-            "Activity Logs",
-            isSelected: selectedIndex == 6,
-          ),
-          const Spacer(),
           _buildAdminProfile(),
           const SizedBox(height: 24),
         ],

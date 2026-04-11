@@ -1,11 +1,14 @@
+import 'package:admin_dashboard/controllers/overView_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 import 'package:admin_dashboard/theme/app_theme.dart';
 import 'package:admin_dashboard/data/mock_data.dart';
 import 'package:admin_dashboard/widgets/stat_card.dart';
 import 'package:admin_dashboard/widgets/report_table.dart';
+
+import 'package:admin_dashboard/models/dashboard_stats_model.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -43,9 +46,9 @@ class _OverviewPageState extends State<OverviewPage>
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // --- INTEGRATED TOP BAR ---
+          // --- TOP BAR ---
           _buildTopBar(),
-
+          
           // --- EXISTING DASHBOARD CONTENT ---
           Expanded(
             child: SingleChildScrollView(
@@ -130,11 +133,8 @@ class _OverviewPageState extends State<OverviewPage>
                   // Stats Grid
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount =
-                          MediaQuery.of(context).size.width > 1200 ? 4 : 2;
-                      final itemWidth =
-                          (constraints.maxWidth - (crossAxisCount - 1) * 20) /
-                          crossAxisCount;
+                      final crossAxisCount = MediaQuery.of(context).size.width > 1200 ? 4 : 2;
+                      final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 20) / crossAxisCount;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 20,
@@ -142,62 +142,26 @@ class _OverviewPageState extends State<OverviewPage>
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         childAspectRatio: itemWidth / 175.0,
-                        children: const [
+                        children: [
                           StatCard(
-                            icon: FaIcon(
-                              FontAwesomeIcons.flag,
-                              color: AppTheme.primary,
-                              size: 18,
-                            ),
-                            iconBg: AppTheme.primaryLighter,
-                            gradientStart: AppTheme.primary,
-                            gradientEnd: AppTheme.primaryLight,
-                            trend: '+12%',
-                            isUp: true,
-                            value: '127',
-                            label: 'Total Reports',
+                            icon: FaIcon(FontAwesomeIcons.flag, color: AppTheme.primary, size: 18), iconBg: AppTheme.primaryLighter,
+                            gradientStart: AppTheme.primary, gradientEnd: AppTheme.primaryLight,
+                            trend: '+12%', isUp: true, value: '127', label: 'Total Reports',
                           ),
                           StatCard(
-                            icon: FaIcon(
-                              FontAwesomeIcons.circleCheck,
-                              color: Color(0xFF059669),
-                              size: 18,
-                            ),
-                            iconBg: Color(0xFFD1FAE5),
-                            gradientStart: Color(0xFF059669),
-                            gradientEnd: AppTheme.accent2,
-                            trend: '+8%',
-                            isUp: true,
-                            value: '78',
-                            label: 'Resolved',
+                            icon: FaIcon(FontAwesomeIcons.circleCheck, color: Color(0xFF059669), size: 18), iconBg: Color(0xFFD1FAE5),
+                            gradientStart: Color(0xFF059669), gradientEnd: AppTheme.accent2,
+                            trend: '+8%', isUp: true, value: '78', label: 'Resolved',
                           ),
                           StatCard(
-                            icon: FaIcon(
-                              FontAwesomeIcons.clock,
-                              color: Color(0xFFD97706),
-                              size: 18,
-                            ),
-                            iconBg: Color(0xFFFEF3C7),
-                            gradientStart: Color(0xFFD97706),
-                            gradientEnd: AppTheme.accent,
-                            trend: '-3%',
-                            isUp: false,
-                            value: '34',
-                            label: 'Pending',
+                            icon: FaIcon(FontAwesomeIcons.clock, color: Color(0xFFD97706), size: 18), iconBg: Color(0xFFFEF3C7),
+                            gradientStart: Color(0xFFD97706), gradientEnd: AppTheme.accent,
+                            trend: '-3%', isUp: false, value: '34', label: 'Pending',
                           ),
                           StatCard(
-                            icon: FaIcon(
-                              FontAwesomeIcons.users,
-                              color: Color(0xFFDC2626),
-                              size: 18,
-                            ),
-                            iconBg: Color(0xFFFEE2E2),
-                            gradientStart: Color(0xFFDC2626),
-                            gradientEnd: AppTheme.danger,
-                            trend: '+22%',
-                            isUp: true,
-                            value: '101',
-                            label: 'Active Citizens',
+                            icon: FaIcon(FontAwesomeIcons.users, color: Color(0xFFDC2626), size: 18), iconBg: Color(0xFFFEE2E2),
+                            gradientStart: Color(0xFFDC2626), gradientEnd: AppTheme.danger,
+                            trend: '+22%', isUp: true, value: '101', label: 'Active Citizens',
                           ),
                         ],
                       );
@@ -464,7 +428,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // --- TOP BAR WIDGET
+  // --- TOP BAR WIDGET 
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -552,7 +516,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // --- REMAINING CHART & LEGEND WIDGETS ---
+  // --- CHART WIDGETS ---
   Widget _buildLegendItem(String name, int count, Color color, double percent) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
