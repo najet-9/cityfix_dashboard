@@ -12,11 +12,17 @@ class AdminLogin extends StatefulWidget {
 }
 
 class _AdminLoginState extends State<AdminLogin> {
-  bool _obscurePassword = true;
-  bool _rememberMe = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _rememberMe = false;
   bool _isLoading = false;
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _signIn() async {
     try {
@@ -249,6 +255,20 @@ class _AdminLoginState extends State<AdminLogin> {
                   const SizedBox(height: 20),
 
                   Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        onChanged: (value) {
+                          setState(() {
+                            _rememberMe = value!;
+                          });
+                        },
+                      ),
+                      const Text("Remember me"),
+                    ],
+                  ),
+
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
@@ -256,7 +276,7 @@ class _AdminLoginState extends State<AdminLogin> {
                         child: const Text(
                           "Forgot password?",
                           style: TextStyle(
-                            color: cityfixBlue,
+                            color: Color(0xFF2563EB),
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
@@ -291,7 +311,14 @@ class _AdminLoginState extends State<AdminLogin> {
                         elevation: 0,
                       ),
                       child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

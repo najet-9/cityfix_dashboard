@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/user.dart';
 
 class UsersScreen extends StatelessWidget {
   const UsersScreen({super.key});
@@ -71,76 +73,52 @@ class UsersScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // GRILLE DES UTILISATEURS
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 24,
-                    mainAxisSpacing: 24,
-                    childAspectRatio: 1.6,
-                    children: [
-                      _buildUserCard(
-                        "Rihab Benali",
-                        "rihab.benali@gmail.com",
-                        "Jijel",
-                        "RB",
-                        const Color(0xFF1D4ED8),
-                        3,
-                        8,
-                        "267%",
-                      ),
-                      _buildUserCard(
-                        "Fatima Hadj",
-                        "fatima.hadj@gmail.com",
-                        "Constantine",
-                        "FH",
-                        const Color(0xFF7C3AED),
-                        5,
-                        1,
-                        "20%",
-                      ),
-                      _buildUserCard(
-                        "Mohamed Cherif",
-                        "mohamed.cherif@gmail.com",
-                        "Sétif",
-                        "MC",
-                        const Color(0xFF059669),
-                        8,
-                        5,
-                        "63%",
-                      ),
-                      _buildUserCard(
-                        "Amira Bouali",
-                        "amira.bouali@gmail.com",
-                        "Tlemcen",
-                        "AB",
-                        const Color(0xFFDC2626),
-                        22,
-                        9,
-                        "41%",
-                      ),
-                      _buildUserCard(
-                        "Karim Meziane",
-                        "karim.meziane@gmail.com",
-                        "Jijel",
-                        "KM",
-                        const Color(0xFFD97706),
-                        16,
-                        6,
-                        "38%",
-                      ),
-                      _buildUserCard(
-                        "Nadia Beloufa",
-                        "nadia.beloufa@gmail.com",
-                        "Oran",
-                        "NB",
-                        const Color(0xFF0891B2),
-                        21,
-                        14,
-                        "67%",
-                      ),
-                    ],
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final users = snapshot.data!.docs.map((doc) {
+                        return CitizenUser.fromMap(
+                          doc.data() as Map<String, dynamic>,
+                        );
+                      }).toList();
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: users.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 24,
+                              mainAxisSpacing: 24,
+                              childAspectRatio: 1.4,
+                            ),
+                        itemBuilder: (context, index) {
+                          final user = users[index];
+
+                          String rate = user.reports == 0
+                              ? "0%"
+                              : "${((user.resolved / user.reports) * 100).toStringAsFixed(0)}%";
+
+                          return _buildUserCard(
+                            user.name,
+                            user.email,
+                            user.wilaya,
+                            user.initials,
+                            user.color,
+                            user.reports,
+                            user.resolved,
+                            rate,
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
