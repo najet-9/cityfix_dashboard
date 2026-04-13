@@ -10,6 +10,44 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
+  final Map<String, String> _userNameCache = {};
+
+  Future<String> _fetchUserName(String userId) async {
+    if (userId.isEmpty) return 'Unknown';
+    if (_userNameCache.containsKey(userId)) return _userNameCache[userId]!;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      final name = doc.data()?['fullName'] as String? ?? 'Unknown';
+      _userNameCache[userId] = name;
+      return name;
+    } catch (_) {
+      return 'Unknown';
+    }
+  }
+
+  String _formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null) return 'N/A';
+    final DateTime dt = timestamp.toDate();
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,8 +59,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32),
               child: Container(
-                width:
-                    double.infinity, // Ensures the container fills the screen
+                width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -53,7 +90,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           );
                         }
 
-                        // THE FIX FOR SPACING: LayoutBuilder makes the table responsive
                         return LayoutBuilder(
                           builder: (context, constraints) {
                             return SingleChildScrollView(
@@ -110,6 +146,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     ),
                                     DataColumn(
                                       label: Text(
+                                        "Submitted By",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        "Created At",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
                                         "Actions",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
@@ -144,6 +196,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final String docId = doc.id;
     report['id'] = docId;
 
+    final String userId = report['userId'] ?? '';
+    final Timestamp? createdAt = report['createdAt'] as Timestamp?;
+
     return DataRow(
       cells: [
         DataCell(
@@ -168,6 +223,35 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ),
         DataCell(Text("${report['confirmationCount'] ?? 0}")),
+
+        // Submitted By
+        DataCell(
+          FutureBuilder<String>(
+            future: _fetchUserName(userId),
+            builder: (context, nameSnapshot) {
+              if (nameSnapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                );
+              }
+              return Text(
+                nameSnapshot.data ?? 'Unknown',
+                style: const TextStyle(fontSize: 13),
+              );
+            },
+          ),
+        ),
+
+        // Created At
+        DataCell(
+          Text(
+            _formatTimestamp(createdAt),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+          ),
+        ),
+
         DataCell(
           Row(
             children: [
