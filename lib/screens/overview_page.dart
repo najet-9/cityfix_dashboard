@@ -1,15 +1,18 @@
 import 'package:admin_dashboard/controllers/overView_controller.dart';
+import 'package:admin_dashboard/controllers/report_controller.dart';
+import 'package:admin_dashboard/models/report.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:admin_dashboard/theme/app_theme.dart';
-import 'package:admin_dashboard/data/mock_data.dart';
 import 'package:admin_dashboard/widgets/stat_card.dart';
 import 'package:admin_dashboard/widgets/report_table.dart';
-
+import 'package:admin_dashboard/screens/reports_screen.dart';
 import 'package:admin_dashboard/models/dashboard_stats_model.dart';
+import 'package:admin_dashboard/models/report_model.dart';
+import 'package:admin_dashboard/data/mock_data.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -21,7 +24,7 @@ class _OverviewPageState extends State<OverviewPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-
+  late Future<List<ReportModel>> reportsFuture;
   @override
   void initState() {
     super.initState();
@@ -33,6 +36,7 @@ class _OverviewPageState extends State<OverviewPage>
       begin: 0.5,
       end: 1.0,
     ).animate(_pulseController);
+    reportsFuture = AdminReportController().getRecentReports();
   }
 
   @override
@@ -100,7 +104,16 @@ class _OverviewPageState extends State<OverviewPage>
                         ],
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {},
+ 
+                        onPressed: () {
+  print("VIEW ALL CLICKED");
+
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => const ReportsScreen(),
+    ),
+  );
+},
                         icon: const FaIcon(
                           FontAwesomeIcons.fileExport,
                           size: 13,
@@ -475,7 +488,20 @@ class _OverviewPageState extends State<OverviewPage>
                             ],
                           ),
                         ),
-                        ReportTable(reports: reportsList.take(8).toList()),
+                        FutureBuilder<List<ReportModel>>(
+  future: reportsFuture,
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final reports = snapshot.data!.take(3).toList();
+    
+    return ReportTable(reports: reports);
+  },
+),
                       ],
                     ),
                   ),
