@@ -7,21 +7,19 @@ import '../models/category_model.dart';
 class CategoryPage extends StatelessWidget {
   CategoryPage({super.key});
 
+  // Controller instance to handle data logic
   final CategoryController _controller = CategoryController();
 
   @override
   Widget build(BuildContext context) {
-    // Récupération des données via le contrôleur
-    final List<CategoryModel> categories = _controller.getCategories();
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Fond gris clair du dashboard
+      backgroundColor: const Color(0xFFF8FAFC), // Dashboard light gray background
       body: Column(
         children: [
-          // 1. BARRE DE NAVIGATION SUPÉRIEURE (TOP BAR)
+          // 1. TOP NAVIGATION BAR
           _buildTopBar(),
 
-          // 2. CONTENU PRINCIPAL
+          // 2. MAIN CONTENT AREA
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
@@ -46,21 +44,59 @@ class CategoryPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // GRILLE DES CATÉGORIES
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, // 3 colonnes comme sur la photo
+                  // CATEGORIES GRID LINKED TO FIREBASE
+                  StreamBuilder<List<CategoryModel>>(
+                    // Listening to real-time updates from Firestore
+                    stream: _controller.getCategoriesStream(),
+                    builder: (context, snapshot) {
+                      // Handling Loading State
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(50.0),
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Handling Error State
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            "Error loading data: ${snapshot.error}",
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
+
+                      // Handling Empty Data State
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(
+                          child: Text("No categories found in Firebase"),
+                        );
+                      }
+
+                      // Data received successfully
+                      final List<CategoryModel> categories = snapshot.data!;
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, // 3 columns as per original design
                           crossAxisSpacing: 24,
                           mainAxisSpacing: 24,
-                          childAspectRatio:
-                              1.6, // Ajuste la forme rectangulaire
+                          childAspectRatio: 1.6, // Rectangular shape maintenance
                         ),
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      return CategoryCard(category: categories[index]);
+                        itemCount: categories.length,
+                        itemBuilder: (context, index) {
+                          // Returning the exact same card widget
+                          return CategoryCard(category: categories[index]);
+                        },
+                      );
                     },
                   ),
                 ],
@@ -92,7 +128,7 @@ class CategoryPage extends StatelessWidget {
           ),
           const Spacer(),
 
-          // BARRE DE RECHERCHE
+          // SEARCH BAR
           Container(
             width: 350,
             height: 40,
@@ -117,7 +153,7 @@ class CategoryPage extends StatelessWidget {
 
           const SizedBox(width: 16),
 
-          // BOUTONS D'ACTION (Notifications, Download, Refresh)
+          // ACTION BUTTONS (Notifications, Download, Refresh)
           _buildIconButton(Icons.notifications_none_rounded, badge: "3"),
           const SizedBox(width: 8),
           _buildIconButton(Icons.file_download_outlined),
@@ -128,7 +164,7 @@ class CategoryPage extends StatelessWidget {
     );
   }
 
-  // --- WIDGET : BOUTON ICONE AVEC BADGE ---
+  // --- WIDGET : ICON BUTTON WITH BADGE ---
   Widget _buildIconButton(IconData icon, {String? badge}) {
     return Stack(
       children: [
@@ -147,7 +183,7 @@ class CategoryPage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: const BoxDecoration(
-                color: Colors.orange, // Couleur orange CityFix
+                color: Colors.orange, // CityFix orange color
                 shape: BoxShape.circle,
               ),
               child: Text(
