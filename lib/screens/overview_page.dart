@@ -475,16 +475,24 @@ class _OverviewPageState extends State<OverviewPage>
                                 ],
                               ),
                               TextButton.icon(
-                                onPressed: () {},
-                                icon: const FaIcon(
-                                  FontAwesomeIcons.arrowRight,
-                                  size: 12,
-                                ),
-                                label: const Text(
-                                  'View all',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
+  onPressed: () {
+    debugPrint("VIEW ALL CLICKED");
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const ReportsScreen(),
+      ),
+    );
+  },
+  icon: const FaIcon(
+    FontAwesomeIcons.arrowRight,
+    size: 12,
+  ),
+  label: const Text(
+    'View all',
+    style: TextStyle(fontSize: 12),
+  ),
+),
                             ],
                           ),
                         ),

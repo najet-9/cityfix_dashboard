@@ -29,7 +29,6 @@ class ReportTable extends StatelessWidget {
           DataColumn(label: _TableHeading('Status')),
           DataColumn(label: _TableHeading('Confirmations')),
           DataColumn(label: _TableHeading('Date')),
-          DataColumn(label: _TableHeading('Actions')),
         ],
         rows: reports.map((r) {
           return DataRow(
@@ -44,16 +43,6 @@ class ReportTable extends StatelessWidget {
               DataCell(_buildStatusBadge(r.status)),
               DataCell(Text('👍 ${r.confirmationCount}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary))),
               DataCell(Text(r.createdAt?.toDate().toString() ??'', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
-              DataCell(Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _actionBtn(FontAwesomeIcons.eye),
-                  const SizedBox(width: 4),
-                  _actionBtn(FontAwesomeIcons.pen),
-                  const SizedBox(width: 4),
-                  _actionBtn(FontAwesomeIcons.trash, isDanger: true),
-                ],
-              )),
             ],
           );
         }).toList(),
