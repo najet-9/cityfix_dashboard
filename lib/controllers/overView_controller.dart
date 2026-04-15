@@ -1,5 +1,3 @@
-// lib/controllers/overView_controller.dart
-
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,17 +10,16 @@ class DashboardController extends ChangeNotifier {
   bool isLoading = true;
   String? errorMessage;
 
-  // Hold all stream subscriptions so we can cancel them in dispose()
   final List<StreamSubscription> _subscriptions = [];
 
-  // Internal counters updated independently by each stream
   int _totalReports = 0;
   int _resolved = 0;
   int _pending = 0;
   int _activeCitizens = 0;
 
-  // Track how many streams have emitted at least once.
-  // Only set isLoading = false when all 4 have delivered their first value.
+  // Category counters (Added _parks)
+  int _roads = 0, _lighting = 0, _water = 0, _waste = 0, _parks = 0, _other = 0;
+
   int _readyCount = 0;
   static const int _totalStreams = 4;
 
@@ -35,6 +32,35 @@ class DashboardController extends ChangeNotifier {
     _subscriptions.add(
       _db.collection('reports').snapshots().listen((snap) {
         _totalReports = snap.size;
+
+        // Reset and calculate category counts every time this stream fires
+        _roads = 0;
+        _lighting = 0;
+        _water = 0;
+        _waste = 0;
+        _parks = 0; // Added for Parks
+        _other = 0;
+
+        for (var doc in snap.docs) {
+          String category = (doc.data()['category'] ?? '')
+              .toString()
+              .toLowerCase();
+
+          if (category == 'roads') {
+            _roads++;
+          } else if (category == 'lighting') {
+            _lighting++;
+          } else if (category == 'water') {
+            _water++;
+          } else if (category == 'waste') {
+            _waste++;
+          } else if (category == 'parks' || category == 'recreation') {
+            _parks++; // Logic for the new "Parks" card
+          } else {
+            _other++;
+          }
+        }
+
         _onStreamUpdate();
       }, onError: _onError),
     );
@@ -72,15 +98,9 @@ class DashboardController extends ChangeNotifier {
     );
   }
 
-  // Called every time any stream emits a new value.
   void _onStreamUpdate() {
-    // Count how many streams have fired at least once.
-    // We increment until we reach _totalStreams, then stop counting.
     if (_readyCount < _totalStreams) _readyCount++;
 
-    // Only publish stats once ALL 4 streams have given us their first value,
-    // so the UI never shows partial data (e.g. totalReports=5, resolved=0
-    // just because stream 1 fired before stream 2 did).
     if (_readyCount == _totalStreams) {
       isLoading = false;
       errorMessage = null;
@@ -89,6 +109,13 @@ class DashboardController extends ChangeNotifier {
         resolved: _resolved,
         pending: _pending,
         activeCitizens: _activeCitizens,
+        // Passing the new category values to the model
+        roads: _roads,
+        lighting: _lighting,
+        water: _water,
+        waste: _waste,
+        parks: _parks, // Added
+        other: _other,
       );
       notifyListeners();
     }
@@ -102,7 +129,6 @@ class DashboardController extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Cancel all Firestore listeners to avoid memory leaks.
     for (final sub in _subscriptions) {
       sub.cancel();
     }
