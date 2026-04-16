@@ -1,11 +1,13 @@
+import 'package:admin_dashboard/models/report_model.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/report.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
+import 'package:admin_dashboard/models/report_model.dart';
 
 class ReportTable extends StatelessWidget {
-  final List<Report> reports;
+  final List<ReportModel> reports;
 
   const ReportTable({super.key, required this.reports});
 
@@ -27,31 +29,20 @@ class ReportTable extends StatelessWidget {
           DataColumn(label: _TableHeading('Status')),
           DataColumn(label: _TableHeading('Confirmations')),
           DataColumn(label: _TableHeading('Date')),
-          DataColumn(label: _TableHeading('Actions')),
         ],
         rows: reports.map((r) {
           return DataRow(
             cells: [
-              DataCell(Text(r.id, style: const TextStyle(fontFamily: 'JetBrains Mono', color: AppTheme.textMuted, fontSize: 12))),
+              DataCell(Text(r.reportId ??'', style: const TextStyle(fontFamily: 'JetBrains Mono', color: AppTheme.textMuted, fontSize: 12))),
               DataCell(_buildCatBadge(r.category)),
               DataCell(Container(
                 constraints: const BoxConstraints(maxWidth: 200),
-                child: Text(r.desc, maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text(r.description, maxLines: 1, overflow: TextOverflow.ellipsis),
               )),
-              DataCell(Text(r.address, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
+              DataCell(Text(r.address ??'', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
               DataCell(_buildStatusBadge(r.status)),
-              DataCell(Text('👍 ${r.confirmations}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary))),
-              DataCell(Text(r.date, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
-              DataCell(Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _actionBtn(FontAwesomeIcons.eye),
-                  const SizedBox(width: 4),
-                  _actionBtn(FontAwesomeIcons.pen),
-                  const SizedBox(width: 4),
-                  _actionBtn(FontAwesomeIcons.trash, isDanger: true),
-                ],
-              )),
+              DataCell(Text('👍 ${r.confirmationCount}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary))),
+              DataCell(Text(r.createdAt?.toDate().toString() ??'', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
             ],
           );
         }).toList(),

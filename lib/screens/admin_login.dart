@@ -1,4 +1,5 @@
 import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/controllers/calculations_controller.dart';
 import 'package:admin_dashboard/screens/admin_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +18,13 @@ class _AdminLoginState extends State<AdminLogin> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => context.read<AdminCalculationsController>().fetchStats(),
+    );
+  }
 
   Future<void> _signIn() async {
     try {
@@ -166,11 +174,35 @@ class _AdminLoginState extends State<AdminLogin> {
                   // Stats en bas
                   Row(
                     children: [
-                      _buildStatItem("864", "Total Reports"),
-                      const SizedBox(width: 60),
-                      _buildStatItem("78%", "Resolution Rate"),
-                      const SizedBox(width: 60),
-                      _buildStatItem("58", "Wilayas"),
+                      Consumer<AdminCalculationsController>(
+                        builder: (context, controller, _) {
+                          final stats = controller.stats;
+                          return Row(
+                            children: [
+                              _buildStatItem(
+                                controller.isLoading
+                                    ? '...'
+                                    : '${stats.totalReports}',
+                                'Total Reports',
+                              ),
+                              const SizedBox(width: 60),
+                              _buildStatItem(
+                                controller.isLoading
+                                    ? '...'
+                                    : stats.resolutionRate,
+                                'Resolution Rate',
+                              ),
+                              const SizedBox(width: 60),
+                              _buildStatItem(
+                                controller.isLoading
+                                    ? '...'
+                                    : '${stats.totalWilayas}',
+                                'Wilayas',
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ],

@@ -17,6 +17,14 @@ class DashboardController extends ChangeNotifier {
   int _pending = 0;
   int _activeCitizens = 0;
 
+  // ── Variables catégories (manquaient = cause des erreurs) ──
+  int _roads = 0;
+  int _lighting = 0;
+  int _water = 0;
+  int _waste = 0;
+  int _parks = 0;
+  int _other = 0;
+
   int _readyCount = 0;
   static const int _totalStreams = 4;
 
@@ -34,6 +42,34 @@ class DashboardController extends ChangeNotifier {
     _subscriptions.add(
       _db.collection('reports').snapshots().listen((snap) {
         _totalReports = snap.size;
+
+        _roads = 0;
+        _lighting = 0;
+        _water = 0;
+        _waste = 0;
+        _parks = 0;
+        _other = 0;
+
+        for (var doc in snap.docs) {
+          String category = (doc.data()['category'] ?? '')
+              .toString()
+              .toLowerCase();
+
+          if (category == 'roads') {
+            _roads++;
+          } else if (category == 'lighting') {
+            _lighting++;
+          } else if (category == 'water') {
+            _water++;
+          } else if (category == 'waste') {
+            _waste++;
+          } else if (category == 'parks' || category == 'recreation') {
+            _parks++;
+          } else {
+            _other++;
+          }
+        }
+
         _onStreamUpdate();
       }, onError: _onError),
     );
@@ -79,6 +115,12 @@ class DashboardController extends ChangeNotifier {
         resolved: _resolved,
         pending: _pending,
         activeCitizens: _activeCitizens,
+        roads: _roads,
+        lighting: _lighting,
+        water: _water,
+        waste: _waste,
+        parks: _parks,
+        other: _other,
       );
       notifyListeners();
     }
@@ -118,7 +160,6 @@ class DashboardController extends ChangeNotifier {
 
       for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
-
         if (data['createdAt'] == null) continue;
 
         Timestamp ts = data['createdAt'] as Timestamp;

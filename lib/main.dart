@@ -1,4 +1,5 @@
 import 'package:admin_dashboard/controllers/auth_controller.dart';
+import 'package:admin_dashboard/controllers/calculations_controller.dart';
 import 'package:admin_dashboard/controllers/overView_controller.dart';
 import 'package:admin_dashboard/screens/admin_login.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +17,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AdminAuthController()),
         ChangeNotifierProvider(create: (_) => DashboardController()),
+        ChangeNotifierProvider(create: (_) => AdminCalculationsController()),
       ],
       child: const CityFixAdminApp(),
     ),

@@ -24,7 +24,7 @@ class ReportModel {
     this.createdAt,
     this.address,
   });
-
+  
   //  Convert Firestore → Object
   factory ReportModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -61,4 +61,7 @@ class ReportModel {
   //  Helpers pour MAP
   double get latitude => location.latitude;
   double get longitude => location.longitude;
+
+
+  
 }

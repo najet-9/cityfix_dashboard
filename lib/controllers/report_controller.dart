@@ -3,10 +3,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:admin_dashboard/models/report_model.dart';
 
 class AdminReportController extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-
+  
+     Future<List<ReportModel>> getRecentReports() async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection('reports')
+      .orderBy('createdAt', descending: true)
+      .limit(3) 
+      .get();
+   return snapshot.docs
+      .map((doc) => ReportModel.fromFirestore(doc))
+      .toList();
+  
+}
   Future<void> updateReportStatus({
     required String docId,
     required String newStatus,

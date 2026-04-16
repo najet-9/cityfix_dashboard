@@ -12,4 +12,14 @@ class CategoryModel {
     required this.resolvedPercentage,
     required this.chartData,
   });
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      name: json['name'] ?? '',
+      icon: json['icon'] ?? '',
+      reports: json['reports'] ?? 0,
+      resolvedPercentage: json['resolvedPercentage'] ?? 0,
+      chartData: List<double>.from(json['chartData']?.map((x) => x.toDouble()) ?? []),
+    );
+  }
 }

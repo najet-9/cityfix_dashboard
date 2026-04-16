@@ -1,14 +1,16 @@
 import 'package:admin_dashboard/controllers/overView_controller.dart';
+import 'package:admin_dashboard/controllers/report_controller.dart';
+import 'package:admin_dashboard/screens/reports_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:admin_dashboard/theme/app_theme.dart';
-import 'package:admin_dashboard/data/mock_data.dart';
 import 'package:admin_dashboard/widgets/stat_card.dart';
 import 'package:admin_dashboard/widgets/report_table.dart';
 import 'package:admin_dashboard/models/dashboard_stats_model.dart';
+import 'package:admin_dashboard/models/report_model.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -20,6 +22,7 @@ class _OverviewPageState extends State<OverviewPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  late Future<List<ReportModel>> reportsFuture;
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _OverviewPageState extends State<OverviewPage>
       begin: 0.5,
       end: 1.0,
     ).animate(_pulseController);
+    reportsFuture = AdminReportController().getRecentReports();
   }
 
   @override
@@ -96,7 +100,13 @@ class _OverviewPageState extends State<OverviewPage>
                         ],
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ReportsScreen(),
+                            ),
+                          );
+                        },
                         icon: const FaIcon(
                           FontAwesomeIcons.fileExport,
                           size: 13,
@@ -223,201 +233,233 @@ class _OverviewPageState extends State<OverviewPage>
                   const SizedBox(height: 28),
 
                   // ── Charts Row ──
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Graphe ligne
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(
-                              AppTheme.radius,
-                            ),
-                            border: Border.all(color: AppTheme.border),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(24.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                  Consumer<DashboardController>(
+                    builder: (context, controller, _) {
+                      final s = controller.stats;
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ── Graphe ligne ──
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radius,
+                                ),
+                                border: Border.all(color: AppTheme.border),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(24.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          'Reports Over Time',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.text,
-                                          ),
+                                        const Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Reports Over Time',
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppTheme.text,
+                                              ),
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              'Monthly report submissions — 2026',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: AppTheme.textMuted,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(height: 2),
-                                        Text(
-                                          'Monthly report submissions — 2026',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppTheme.textMuted,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: AppTheme.border,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: const Text(
+                                            '2026',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppTheme.textMuted,
+                                            ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: AppTheme.border,
-                                          width: 1.5,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      24, 0, 24, 24,
+                                    ),
+                                    child: SizedBox(
+                                      height: 250,
+                                      child: _buildLineChart(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+
+                          // ── Donut chart ──
+                          Container(
+                            width: 380,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radius),
+                              border: Border.all(color: AppTheme.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.fromLTRB(24, 20, 24, 0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'By Category',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.text,
                                         ),
-                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Text(
-                                        '2026',
+                                      SizedBox(height: 2),
+                                      Text(
+                                        'Distribution of report types',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: AppTheme.textMuted,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  24,
-                                  0,
-                                  24,
-                                  24,
-                                ),
-                                child: SizedBox(
-                                  height: 250,
-                                  child: _buildLineChart(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-
-                      // Donut chart
-                      Container(
-                        width: 380,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(AppTheme.radius),
-                          border: Border.all(color: AppTheme.border),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(24, 20, 24, 0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'By Category',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.text,
-                                    ),
+                                    ],
                                   ),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    'Distribution of report types',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppTheme.textMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              height: 180,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  _buildDonutChart(),
-                                  const Column(
-                                    mainAxisSize: MainAxisSize.min,
+                                ),
+                                const SizedBox(height: 20),
+                                SizedBox(
+                                  height: 180,
+                                  child: Stack(
+                                    alignment: Alignment.center,
                                     children: [
-                                      Text(
-                                        '406',
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppTheme.text,
-                                          letterSpacing: -1,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Total',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: AppTheme.textMuted,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                      // Donut avec données réelles si disponibles
+                                      s != null
+                                          ? _buildDonutChart(s)
+                                          : const CircularProgressIndicator(),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            s != null
+                                                ? s.totalReports.toString()
+                                                : '0',
+                                            style: const TextStyle(
+                                              fontSize: 28,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppTheme.text,
+                                              letterSpacing: -1,
+                                            ),
+                                          ),
+                                          const Text(
+                                            'Total',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: AppTheme.textMuted,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 20),
+                                if (s != null)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      24, 0, 24, 20,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        _buildLegendItem(
+                                          'Roads',
+                                          s.roads,
+                                          const Color(0xFF1D4ED8),
+                                          s.totalReports > 0
+                                              ? s.roads / s.totalReports
+                                              : 0,
+                                        ),
+                                        _buildLegendItem(
+                                          'Lighting',
+                                          s.lighting,
+                                          const Color(0xFFF59E0B),
+                                          s.totalReports > 0
+                                              ? s.lighting / s.totalReports
+                                              : 0,
+                                        ),
+                                        _buildLegendItem(
+                                          'Water',
+                                          s.water,
+                                          const Color(0xFF10B981),
+                                          s.totalReports > 0
+                                              ? s.water / s.totalReports
+                                              : 0,
+                                        ),
+                                        _buildLegendItem(
+                                          'Waste',
+                                          s.waste,
+                                          const Color(0xFFEF4444),
+                                          s.totalReports > 0
+                                              ? s.waste / s.totalReports
+                                              : 0,
+                                        ),
+                                        _buildLegendItem(
+                                          'Parks',
+                                          s.parks,
+                                          const Color(0xFFF0C631),
+                                          s.totalReports > 0
+                                              ? s.parks / s.totalReports
+                                              : 0,
+                                        ),
+                                        _buildLegendItem(
+                                          'Other',
+                                          s.other,
+                                          const Color(0xFF8B5CF6),
+                                          s.totalReports > 0
+                                              ? s.other / s.totalReports
+                                              : 0,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
                             ),
-                            const SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                              child: Column(
-                                children: [
-                                  _buildLegendItem(
-                                    'Roads',
-                                    134,
-                                    const Color(0xFF1D4ED8),
-                                    0.72,
-                                  ),
-                                  _buildLegendItem(
-                                    'Lighting',
-                                    97,
-                                    const Color(0xFFF59E0B),
-                                    0.55,
-                                  ),
-                                  _buildLegendItem(
-                                    'Water',
-                                    57,
-                                    const Color(0xFF10B981),
-                                    0.40,
-                                  ),
-                                  _buildLegendItem(
-                                    'Waste',
-                                    79,
-                                    const Color(0xFFEF4444),
-                                    0.30,
-                                  ),
-                                  _buildLegendItem(
-                                    'Other',
-                                    39,
-                                    const Color(0xFF8B5CF6),
-                                    0.22,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 28),
 
@@ -458,7 +500,13 @@ class _OverviewPageState extends State<OverviewPage>
                                 ],
                               ),
                               TextButton.icon(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ReportsScreen(),
+                                    ),
+                                  );
+                                },
                                 icon: const FaIcon(
                                   FontAwesomeIcons.arrowRight,
                                   size: 12,
@@ -471,7 +519,21 @@ class _OverviewPageState extends State<OverviewPage>
                             ],
                           ),
                         ),
-                        ReportTable(reports: reportsList.take(8).toList()),
+                        FutureBuilder<List<ReportModel>>(
+                          future: reportsFuture,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            final reports = snapshot.data!.take(3).toList();
+                            return ReportTable(reports: reports);
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -572,8 +634,13 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── CHART WIDGETS ──
-  Widget _buildLegendItem(String name, int count, Color color, double percent) {
+  // ── LEGEND ITEM ──
+  Widget _buildLegendItem(
+    String name,
+    int count,
+    Color color,
+    double percent,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
@@ -627,7 +694,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── LINE CHART (données Firestore) ──
+  // ── LINE CHART ──
   Widget _buildLineChart() {
     return Consumer<DashboardController>(
       builder: (context, controller, _) {
@@ -639,18 +706,14 @@ class _OverviewPageState extends State<OverviewPage>
         List<FlSpot> resolvedSpots = [];
 
         for (int i = 1; i <= 12; i++) {
-          reportSpots.add(
-            FlSpot(
-              (i - 1).toDouble(),
-              (controller.monthlyReports[i] ?? 0).toDouble(),
-            ),
-          );
-          resolvedSpots.add(
-            FlSpot(
-              (i - 1).toDouble(),
-              (controller.monthlyResolved[i] ?? 0).toDouble(),
-            ),
-          );
+          reportSpots.add(FlSpot(
+            (i - 1).toDouble(),
+            (controller.monthlyReports[i] ?? 0).toDouble(),
+          ));
+          resolvedSpots.add(FlSpot(
+            (i - 1).toDouble(),
+            (controller.monthlyResolved[i] ?? 0).toDouble(),
+          ));
         }
 
         return LineChart(
@@ -675,18 +738,8 @@ class _OverviewPageState extends State<OverviewPage>
                   reservedSize: 30,
                   getTitlesWidget: (value, meta) {
                     const months = [
-                      'Jan',
-                      'Feb',
-                      'Mar',
-                      'Apr',
-                      'May',
-                      'Jun',
-                      'Jul',
-                      'Aug',
-                      'Sep',
-                      'Oct',
-                      'Nov',
-                      'Dec',
+                      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
                     ];
                     if (value.toInt() >= 0 && value.toInt() < 12) {
                       return Padding(
@@ -720,7 +773,6 @@ class _OverviewPageState extends State<OverviewPage>
             ),
             borderData: FlBorderData(show: false),
             lineBarsData: [
-              // Ligne bleue = tous les reports
               LineChartBarData(
                 spots: reportSpots,
                 isCurved: true,
@@ -733,7 +785,6 @@ class _OverviewPageState extends State<OverviewPage>
                   color: const Color(0xFF1D4ED8).withOpacity(0.07),
                 ),
               ),
-              // Ligne verte = reports résolus
               LineChartBarData(
                 spots: resolvedSpots,
                 isCurved: true,
@@ -753,7 +804,8 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  Widget _buildDonutChart() {
+  // ── DONUT CHART ──
+  Widget _buildDonutChart(DashboardStatsModel s) {
     return PieChart(
       PieChartData(
         sectionsSpace: 0,
@@ -761,31 +813,37 @@ class _OverviewPageState extends State<OverviewPage>
         sections: [
           PieChartSectionData(
             color: const Color(0xFF1D4ED8),
-            value: 1042,
+            value: s.roads.toDouble(),
             radius: 25,
             showTitle: false,
           ),
           PieChartSectionData(
             color: const Color(0xFFF59E0B),
-            value: 634,
+            value: s.lighting.toDouble(),
             radius: 25,
             showTitle: false,
           ),
           PieChartSectionData(
             color: const Color(0xFF10B981),
-            value: 512,
+            value: s.water.toDouble(),
             radius: 25,
             showTitle: false,
           ),
           PieChartSectionData(
             color: const Color(0xFFEF4444),
-            value: 384,
+            value: s.waste.toDouble(),
+            radius: 25,
+            showTitle: false,
+          ),
+          PieChartSectionData(
+            color: const Color(0xFFF0C631),
+            value: s.parks.toDouble(),
             radius: 25,
             showTitle: false,
           ),
           PieChartSectionData(
             color: const Color(0xFF8B5CF6),
-            value: 275,
+            value: s.other.toDouble(),
             radius: 25,
             showTitle: false,
           ),
