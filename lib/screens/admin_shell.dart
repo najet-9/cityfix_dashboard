@@ -26,8 +26,8 @@ class _AdminShellState extends State<AdminShell> {
     const UsersScreen(),
     const AdminAlerts(),
     CategoryPage(),
-    const SettingsPage(),
-    const LogsPage(),
+    SettingsPage(),
+    LogsPage(),
   ];
 
   Future<void> _signOut() async {

@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../controllers/users_controller.dart';
 
-class UsersScreen extends StatelessWidget {
+class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
+
+  @override
+  State<UsersScreen> createState() => _UsersScreenState();
+}
+
+class _UsersScreenState extends State<UsersScreen> {
+  late UsersController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = UsersController();
+    _controller.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +55,9 @@ class UsersScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            "598 registered users across Algeria",
-                            style: TextStyle(
+                          Text(
+                            "${_controller.totalCitizens} registered users across Algeria",
+                            style: const TextStyle(
                               color: Color(0xFF64748B),
                               fontSize: 14,
                             ),
@@ -72,76 +95,55 @@ class UsersScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // GRILLE DES UTILISATEURS
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 24,
-                    mainAxisSpacing: 24,
-                    childAspectRatio: 1.6,
-                    children: [
-                      _buildUserCard(
-                        "Rihab Benali",
-                        "rihab.benali@gmail.com",
-                        "Jijel",
-                        "RB",
-                        const Color(0xFF1D4ED8),
-                        3,
-                        8,
-                        "267%",
+                  if (_controller.isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(60),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF2563EB),
+                        ),
                       ),
-                      _buildUserCard(
-                        "Fatima Hadj",
-                        "fatima.hadj@gmail.com",
-                        "Constantine",
-                        "FH",
-                        const Color(0xFF7C3AED),
-                        5,
-                        1,
-                        "20%",
+                    )
+                  else if (_controller.filteredCitizens.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(60),
+                        child: Text(
+                          "No users found.",
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                      _buildUserCard(
-                        "Mohamed Cherif",
-                        "mohamed.cherif@gmail.com",
-                        "Sétif",
-                        "MC",
-                        const Color(0xFF059669),
-                        8,
-                        5,
-                        "63%",
-                      ),
-                      _buildUserCard(
-                        "Amira Bouali",
-                        "amira.bouali@gmail.com",
-                        "Tlemcen",
-                        "AB",
-                        const Color(0xFFDC2626),
-                        22,
-                        9,
-                        "41%",
-                      ),
-                      _buildUserCard(
-                        "Karim Meziane",
-                        "karim.meziane@gmail.com",
-                        "Jijel",
-                        "KM",
-                        const Color(0xFFD97706),
-                        16,
-                        6,
-                        "38%",
-                      ),
-                      _buildUserCard(
-                        "Nadia Beloufa",
-                        "nadia.beloufa@gmail.com",
-                        "Oran",
-                        "NB",
-                        const Color(0xFF0891B2),
-                        21,
-                        14,
-                        "67%",
-                      ),
-                    ],
-                  ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                            childAspectRatio: 1.3,
+                          ),
+                      itemCount: _controller.filteredCitizens.length,
+                      itemBuilder: (context, index) {
+                        final user = _controller.filteredCitizens[index];
+                        return _buildUserCard(
+                          user.name,
+                          user.email,
+                          user.wilaya,
+                          user.initials,
+                          user.color,
+                          user.reports,
+                          user.resolved,
+                          '${user.resolutionRate}%',
+                          user.online,
+                        );
+                      },
+                    ),
                 ],
               ),
             ),
@@ -175,8 +177,9 @@ class UsersScreen extends StatelessWidget {
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
+            child: TextField(
+              onChanged: _controller.applySearch,
+              decoration: const InputDecoration(
                 hintText: "Search reports, users...",
                 hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                 prefixIcon: Icon(
@@ -237,7 +240,6 @@ class UsersScreen extends StatelessWidget {
     );
   }
 
-  // --- USER CARD COMPONENT ---
   Widget _buildUserCard(
     String name,
     String email,
@@ -247,11 +249,12 @@ class UsersScreen extends StatelessWidget {
     int reports,
     int resolved,
     String rate,
+    bool online,
   ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24), // Coins plus arrondis
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10),
@@ -293,9 +296,9 @@ class UsersScreen extends StatelessWidget {
                             width: 14,
                             height: 14,
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF10B981,
-                              ), // Point vert statut
+                              color: online
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF94A3B8),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -362,7 +365,6 @@ class UsersScreen extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          // ZONE DES STATISTIQUES AVEC BORDURES POUR RÉDUIRE L'ESPACE
           Container(
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),

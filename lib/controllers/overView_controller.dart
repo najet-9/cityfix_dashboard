@@ -1,5 +1,3 @@
-// lib/controllers/overView_controller.dart
-
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,26 +10,27 @@ class DashboardController extends ChangeNotifier {
   bool isLoading = true;
   String? errorMessage;
 
-  // Hold all stream subscriptions so we can cancel them in dispose()
   final List<StreamSubscription> _subscriptions = [];
 
-  // Internal counters updated independently by each stream
   int _totalReports = 0;
   int _resolved = 0;
   int _pending = 0;
   int _activeCitizens = 0;
 
-  // Track how many streams have emitted at least once.
-  // Only set isLoading = false when all 4 have delivered their first value.
   int _readyCount = 0;
   static const int _totalStreams = 4;
 
+  // ── Chart data ──
+  Map<int, int> monthlyReports = {};
+  Map<int, int> monthlyResolved = {};
+  bool isLoadingChart = true;
+
   DashboardController() {
     _listenToStreams();
+    fetchMonthlyData();
   }
 
   void _listenToStreams() {
-    // --- Stream 0: total reports ---
     _subscriptions.add(
       _db.collection('reports').snapshots().listen((snap) {
         _totalReports = snap.size;
@@ -39,7 +38,6 @@ class DashboardController extends ChangeNotifier {
       }, onError: _onError),
     );
 
-    // --- Stream 1: resolved reports ---
     _subscriptions.add(
       _db
           .collection('reports')
@@ -51,7 +49,6 @@ class DashboardController extends ChangeNotifier {
           }, onError: _onError),
     );
 
-    // --- Stream 2: pending reports ---
     _subscriptions.add(
       _db
           .collection('reports')
@@ -63,7 +60,6 @@ class DashboardController extends ChangeNotifier {
           }, onError: _onError),
     );
 
-    // --- Stream 3: active citizens (all users) ---
     _subscriptions.add(
       _db.collection('users').snapshots().listen((snap) {
         _activeCitizens = snap.size;
@@ -72,15 +68,9 @@ class DashboardController extends ChangeNotifier {
     );
   }
 
-  // Called every time any stream emits a new value.
   void _onStreamUpdate() {
-    // Count how many streams have fired at least once.
-    // We increment until we reach _totalStreams, then stop counting.
     if (_readyCount < _totalStreams) _readyCount++;
 
-    // Only publish stats once ALL 4 streams have given us their first value,
-    // so the UI never shows partial data (e.g. totalReports=5, resolved=0
-    // just because stream 1 fired before stream 2 did).
     if (_readyCount == _totalStreams) {
       isLoading = false;
       errorMessage = null;
@@ -100,9 +90,56 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchMonthlyData() async {
+    isLoadingChart = true;
+    notifyListeners();
+
+    for (int i = 1; i <= 12; i++) {
+      monthlyReports[i] = 0;
+      monthlyResolved[i] = 0;
+    }
+
+    try {
+      int currentYear = DateTime.now().year;
+
+      QuerySnapshot snapshot = await _db
+          .collection('reports')
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(
+              DateTime(currentYear, 1, 1),
+            ),
+          )
+          .where(
+            'createdAt',
+            isLessThan: Timestamp.fromDate(DateTime(currentYear + 1, 1, 1)),
+          )
+          .get();
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        if (data['createdAt'] == null) continue;
+
+        Timestamp ts = data['createdAt'] as Timestamp;
+        int month = ts.toDate().month;
+
+        monthlyReports[month] = (monthlyReports[month] ?? 0) + 1;
+
+        if (data['status'] == 'resolved') {
+          monthlyResolved[month] = (monthlyResolved[month] ?? 0) + 1;
+        }
+      }
+    } catch (e) {
+      errorMessage = 'Failed to load chart data: $e';
+    }
+
+    isLoadingChart = false;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
-    // Cancel all Firestore listeners to avoid memory leaks.
     for (final sub in _subscriptions) {
       sub.cancel();
     }

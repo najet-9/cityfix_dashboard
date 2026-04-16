@@ -8,7 +8,6 @@ import 'package:admin_dashboard/theme/app_theme.dart';
 import 'package:admin_dashboard/data/mock_data.dart';
 import 'package:admin_dashboard/widgets/stat_card.dart';
 import 'package:admin_dashboard/widgets/report_table.dart';
-
 import 'package:admin_dashboard/models/dashboard_stats_model.dart';
 
 class OverviewPage extends StatefulWidget {
@@ -47,17 +46,14 @@ class _OverviewPageState extends State<OverviewPage>
       backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
-          // --- TOP BAR ---
           _buildTopBar(),
-
-          // --- DASHBOARD CONTENT ---
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
+                  // ── Header ──
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -131,18 +127,15 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 24),
 
-                  // --- Stats Grid (Firestore-driven) ---
+                  // ── Stats Cards ──
                   Consumer<DashboardController>(
                     builder: (context, controller, _) {
-                      // Loading state
                       if (controller.isLoading) {
                         return const SizedBox(
                           height: 175,
                           child: Center(child: CircularProgressIndicator()),
                         );
                       }
-
-                      // Error state
                       if (controller.errorMessage != null) {
                         return SizedBox(
                           height: 175,
@@ -229,10 +222,11 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 28),
 
-                  // Charts Row
+                  // ── Charts Row ──
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Graphe ligne
                       Expanded(
                         flex: 2,
                         child: Container(
@@ -314,6 +308,8 @@ class _OverviewPageState extends State<OverviewPage>
                         ),
                       ),
                       const SizedBox(width: 20),
+
+                      // Donut chart
                       Container(
                         width: 380,
                         decoration: BoxDecoration(
@@ -425,7 +421,7 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 28),
 
-                  // Recent Reports Table
+                  // ── Recent Reports Table ──
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -488,7 +484,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // --- TOP BAR ---
+  // ── TOP BAR ──
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -576,7 +572,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // --- CHART WIDGETS ---
+  // ── CHART WIDGETS ──
   Widget _buildLegendItem(String name, int count, Color color, double percent) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
@@ -631,123 +627,129 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
+  // ── LINE CHART (données Firestore) ──
   Widget _buildLineChart() {
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: 100,
-          getDrawingHorizontalLine: (value) =>
-              FlLine(color: AppTheme.border, strokeWidth: 1),
-        ),
-        titlesData: FlTitlesData(
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-              getTitlesWidget: (value, meta) {
-                const months = [
-                  'Jan',
-                  'Feb',
-                  'Mar',
-                  'Apr',
-                  'May',
-                  'Jun',
-                  'Jul',
-                  'Aug',
-                  'Sep',
-                  'Oct',
-                  'Nov',
-                  'Dec',
-                ];
-                if (value.toInt() >= 0 && value.toInt() < 12) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      months[value.toInt()],
-                      style: const TextStyle(
-                        color: AppTheme.textLight,
-                        fontSize: 12,
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox();
-              },
+    return Consumer<DashboardController>(
+      builder: (context, controller, _) {
+        if (controller.isLoadingChart) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        List<FlSpot> reportSpots = [];
+        List<FlSpot> resolvedSpots = [];
+
+        for (int i = 1; i <= 12; i++) {
+          reportSpots.add(
+            FlSpot(
+              (i - 1).toDouble(),
+              (controller.monthlyReports[i] ?? 0).toDouble(),
             ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) => Text(
-                value.toInt().toString(),
-                style: const TextStyle(color: AppTheme.textLight, fontSize: 12),
+          );
+          resolvedSpots.add(
+            FlSpot(
+              (i - 1).toDouble(),
+              (controller.monthlyResolved[i] ?? 0).toDouble(),
+            ),
+          );
+        }
+
+        return LineChart(
+          LineChartData(
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: 100,
+              getDrawingHorizontalLine: (value) =>
+                  FlLine(color: AppTheme.border, strokeWidth: 1),
+            ),
+            titlesData: FlTitlesData(
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
-              reservedSize: 40,
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 30,
+                  getTitlesWidget: (value, meta) {
+                    const months = [
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec',
+                    ];
+                    if (value.toInt() >= 0 && value.toInt() < 12) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          months[value.toInt()],
+                          style: const TextStyle(
+                            color: AppTheme.textLight,
+                            fontSize: 12,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) => Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(
+                      color: AppTheme.textLight,
+                      fontSize: 12,
+                    ),
+                  ),
+                  reservedSize: 40,
+                ),
+              ),
             ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: const [
-              FlSpot(0, 120),
-              FlSpot(1, 185),
-              FlSpot(2, 210),
-              FlSpot(3, 162),
-              FlSpot(4, 250),
-              FlSpot(5, 285),
-              FlSpot(6, 240),
-              FlSpot(7, 290),
-              FlSpot(8, 320),
-              FlSpot(9, 275),
-              FlSpot(10, 350),
-              FlSpot(11, 410),
+            borderData: FlBorderData(show: false),
+            lineBarsData: [
+              // Ligne bleue = tous les reports
+              LineChartBarData(
+                spots: reportSpots,
+                isCurved: true,
+                color: const Color(0xFF1D4ED8),
+                barWidth: 2.5,
+                isStrokeCapRound: true,
+                dotData: const FlDotData(show: true),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: const Color(0xFF1D4ED8).withOpacity(0.07),
+                ),
+              ),
+              // Ligne verte = reports résolus
+              LineChartBarData(
+                spots: resolvedSpots,
+                isCurved: true,
+                color: const Color(0xFF10B981),
+                barWidth: 2,
+                isStrokeCapRound: true,
+                dotData: const FlDotData(show: true),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: const Color(0xFF10B981).withOpacity(0.05),
+                ),
+              ),
             ],
-            isCurved: true,
-            color: const Color(0xFF1D4ED8),
-            barWidth: 2.5,
-            isStrokeCapRound: true,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(
-              show: true,
-              color: const Color(0xFF1D4ED8).withOpacity(0.07),
-            ),
           ),
-          LineChartBarData(
-            spots: const [
-              FlSpot(0, 95),
-              FlSpot(1, 140),
-              FlSpot(2, 180),
-              FlSpot(3, 130),
-              FlSpot(4, 200),
-              FlSpot(5, 240),
-              FlSpot(6, 195),
-              FlSpot(7, 255),
-              FlSpot(8, 280),
-              FlSpot(9, 230),
-              FlSpot(10, 300),
-              FlSpot(11, 370),
-            ],
-            isCurved: true,
-            color: const Color(0xFF10B981),
-            barWidth: 2,
-            isStrokeCapRound: true,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(
-              show: true,
-              color: const Color(0xFF10B981).withOpacity(0.05),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
