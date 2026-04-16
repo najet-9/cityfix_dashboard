@@ -57,7 +57,6 @@ class _OverviewPageState extends State<OverviewPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Header ──
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -137,7 +136,6 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 24),
 
-                  // ── Stats Cards ──
                   Consumer<DashboardController>(
                     builder: (context, controller, _) {
                       if (controller.isLoading) {
@@ -232,7 +230,6 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Charts Row ──
                   Consumer<DashboardController>(
                     builder: (context, controller, _) {
                       final s = controller.stats;
@@ -240,7 +237,7 @@ class _OverviewPageState extends State<OverviewPage>
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Graphe ligne ──
+                          //  Graphe ligne
                           Expanded(
                             flex: 2,
                             child: Container(
@@ -292,8 +289,9 @@ class _OverviewPageState extends State<OverviewPage>
                                               color: AppTheme.border,
                                               width: 1.5,
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: const Text(
                                             '2026',
@@ -308,7 +306,10 @@ class _OverviewPageState extends State<OverviewPage>
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
-                                      24, 0, 24, 24,
+                                      24,
+                                      0,
+                                      24,
+                                      24,
                                     ),
                                     child: SizedBox(
                                       height: 250,
@@ -321,13 +322,13 @@ class _OverviewPageState extends State<OverviewPage>
                           ),
                           const SizedBox(width: 20),
 
-                          // ── Donut chart ──
                           Container(
                             width: 380,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(AppTheme.radius),
+                              borderRadius: BorderRadius.circular(
+                                AppTheme.radius,
+                              ),
                               border: Border.all(color: AppTheme.border),
                             ),
                             child: Column(
@@ -399,7 +400,10 @@ class _OverviewPageState extends State<OverviewPage>
                                 if (s != null)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
-                                      24, 0, 24, 20,
+                                      24,
+                                      0,
+                                      24,
+                                      20,
                                     ),
                                     child: Column(
                                       children: [
@@ -463,7 +467,7 @@ class _OverviewPageState extends State<OverviewPage>
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Recent Reports Table ──
+                  // Recent Reports Table
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -546,7 +550,6 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── TOP BAR ──
   Widget _buildTopBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -634,13 +637,7 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── LEGEND ITEM ──
-  Widget _buildLegendItem(
-    String name,
-    int count,
-    Color color,
-    double percent,
-  ) {
+  Widget _buildLegendItem(String name, int count, Color color, double percent) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
@@ -694,7 +691,6 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── LINE CHART ──
   Widget _buildLineChart() {
     return Consumer<DashboardController>(
       builder: (context, controller, _) {
@@ -706,14 +702,18 @@ class _OverviewPageState extends State<OverviewPage>
         List<FlSpot> resolvedSpots = [];
 
         for (int i = 1; i <= 12; i++) {
-          reportSpots.add(FlSpot(
-            (i - 1).toDouble(),
-            (controller.monthlyReports[i] ?? 0).toDouble(),
-          ));
-          resolvedSpots.add(FlSpot(
-            (i - 1).toDouble(),
-            (controller.monthlyResolved[i] ?? 0).toDouble(),
-          ));
+          reportSpots.add(
+            FlSpot(
+              (i - 1).toDouble(),
+              (controller.monthlyReports[i] ?? 0).toDouble(),
+            ),
+          );
+          resolvedSpots.add(
+            FlSpot(
+              (i - 1).toDouble(),
+              (controller.monthlyResolved[i] ?? 0).toDouble(),
+            ),
+          );
         }
 
         return LineChart(
@@ -738,8 +738,18 @@ class _OverviewPageState extends State<OverviewPage>
                   reservedSize: 30,
                   getTitlesWidget: (value, meta) {
                     const months = [
-                      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec',
                     ];
                     if (value.toInt() >= 0 && value.toInt() < 12) {
                       return Padding(
@@ -804,7 +814,6 @@ class _OverviewPageState extends State<OverviewPage>
     );
   }
 
-  // ── DONUT CHART ──
   Widget _buildDonutChart(DashboardStatsModel s) {
     return PieChart(
       PieChartData(

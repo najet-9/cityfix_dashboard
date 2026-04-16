@@ -17,7 +17,6 @@ class DashboardController extends ChangeNotifier {
   int _pending = 0;
   int _activeCitizens = 0;
 
-  // ── Variables catégories (manquaient = cause des erreurs) ──
   int _roads = 0;
   int _lighting = 0;
   int _water = 0;
@@ -28,7 +27,6 @@ class DashboardController extends ChangeNotifier {
   int _readyCount = 0;
   static const int _totalStreams = 4;
 
-  // ── Chart data ──
   Map<int, int> monthlyReports = {};
   Map<int, int> monthlyResolved = {};
   bool isLoadingChart = true;
