@@ -1,10 +1,8 @@
 import 'package:admin_dashboard/models/report_model.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../models/report.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
-import 'package:admin_dashboard/models/report_model.dart';
 
 class ReportTable extends StatelessWidget {
   final List<ReportModel> reports;
@@ -33,16 +31,55 @@ class ReportTable extends StatelessWidget {
         rows: reports.map((r) {
           return DataRow(
             cells: [
-              DataCell(Text(r.reportId ??'', style: const TextStyle(fontFamily: 'JetBrains Mono', color: AppTheme.textMuted, fontSize: 12))),
+              DataCell(
+                Text(
+                  r.reportId ?? '',
+                  style: const TextStyle(
+                    fontFamily: 'JetBrains Mono',
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
               DataCell(_buildCatBadge(r.category)),
-              DataCell(Container(
-                constraints: const BoxConstraints(maxWidth: 200),
-                child: Text(r.description, maxLines: 1, overflow: TextOverflow.ellipsis),
-              )),
-              DataCell(Text(r.address ??'', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
+              DataCell(
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 200),
+                  child: Text(
+                    r.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  r.address ?? '',
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
               DataCell(_buildStatusBadge(r.status)),
-              DataCell(Text('👍 ${r.confirmationCount}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primary))),
-              DataCell(Text(r.createdAt?.toDate().toString() ??'', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12))),
+              DataCell(
+                Text(
+                  '👍 ${r.confirmationCount}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  r.createdAt?.toDate().toString() ?? '',
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ],
           );
         }).toList(),
@@ -81,7 +118,11 @@ class ReportTable extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             cat[0].toUpperCase() + cat.substring(1),
-            style: TextStyle(color: textColors[cat] ?? textColors['other'], fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: textColors[cat] ?? textColors['other'],
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -89,7 +130,12 @@ class ReportTable extends StatelessWidget {
   }
 
   Widget _buildStatusBadge(String status) {
-    final labels = {'pending': 'Pending', 'inprogress': 'In Progress', 'resolved': 'Resolved', 'rejected': 'Rejected'};
+    final labels = {
+      'pending': 'Pending',
+      'inprogress': 'In Progress',
+      'resolved': 'Resolved',
+      'rejected': 'Rejected',
+    };
     final bg = {
       'pending': const Color(0xFFFEF3C7),
       'inprogress': const Color(0xFFDBEAFE),
@@ -119,13 +165,21 @@ class ReportTable extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6, height: 6,
-            decoration: BoxDecoration(color: dotColor[status] ?? dotColor['pending'], shape: BoxShape.circle),
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: dotColor[status] ?? dotColor['pending'],
+              shape: BoxShape.circle,
+            ),
           ),
           const SizedBox(width: 6),
           Text(
             labels[status] ?? status,
-            style: TextStyle(color: color[status] ?? color['pending'], fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: color[status] ?? color['pending'],
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -136,13 +190,18 @@ class ReportTable extends StatelessWidget {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: Container(
-        width: 32, height: 32,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppTheme.border, width: 1.5),
         ),
         alignment: Alignment.center,
-        child: FaIcon(icon, size: 13, color: isDanger ? AppTheme.danger : AppTheme.textMuted),
+        child: FaIcon(
+          icon,
+          size: 13,
+          color: isDanger ? AppTheme.danger : AppTheme.textMuted,
+        ),
       ),
     );
   }

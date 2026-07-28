@@ -14,7 +14,6 @@ class AdminLogin extends StatefulWidget {
 
 class _AdminLoginState extends State<AdminLogin> {
   bool _obscurePassword = true;
-  bool _rememberMe = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;

@@ -1,16 +1,25 @@
-# admin_dashboard
+# cityfix Admin dashboard
+the dashboard helps citizens report and confirm urban issues in their environment
 
-A new Flutter project.
 
-## Getting Started
+## Features
+- user can submit new report
+- user can confirm an existing report (submitted by other users)
+- user can see existing reports on the map
+- user can see their own submitted reports in the profile
+- users will be notified when someone confirms their report or someone nearby them submits a report
 
-This project is a starting point for a Flutter application.
+## Tech Stack
+- Flutter (Dart)
+- Firebase (Auth, Firestore)
+- Cloudinary (image storage)
+- OpenStreetMap / Geolocator
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Prerequisites
+- Flutter SDK >= 3.38.9 
+- Firebase project configured
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## License
+This project is provided for portfolio and demonstration purposes only.
+No part of this source code may be copied, modified, or redistributed without explicit permission from the authors.

@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:admin_dashboard/models/category_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -29,8 +27,17 @@ class CategoryController {
           name: entry.key,
           icon: _getIconForCategory(entry.key), // Dynamically assign icons
           reports: entry.value.length, // Total count of documents in this group
-          resolvedPercentage: _calculateResolved(entry.value), // Logic for resolved stats
-          chartData: [0.2, 0.5, 0.4, 0.7, 0.3, 0.5], // Placeholder for visualization
+          resolvedPercentage: _calculateResolved(
+            entry.value,
+          ), // Logic for resolved stats
+          chartData: [
+            0.2,
+            0.5,
+            0.4,
+            0.7,
+            0.3,
+            0.5,
+          ], // Placeholder for visualization
         );
       }).toList();
     });
@@ -62,7 +69,7 @@ class CategoryController {
   /// Calculates the percentage of resolved reports within a specific category group
   int _calculateResolved(List<DocumentSnapshot> docs) {
     if (docs.isEmpty) return 0;
-    
+
     // Filtering documents where the 'status' field is marked as 'resolved'
     int resolvedCount = docs.where((doc) {
       try {
